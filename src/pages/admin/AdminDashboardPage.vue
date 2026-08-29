@@ -39,7 +39,6 @@ const draftCount = computed(() => articlesStore.drafts.length)
 const totalViews = computed(() => articlesStore.articles.reduce((s, a) => s + a.views, 0))
 const commentCount = computed(() => commentsStore.comments.length)
 const approvedComments = computed(() => commentsStore.approved.length)
-const pendingComments = computed(() => commentsStore.pending.length)
 
 const quickActions = [
   { label: 'New article', to: '/admin/articles/new', icon: FileText, tone: 'text-primary-600 bg-primary-100' },
@@ -71,7 +70,7 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
         to="/admin/articles/new"
         class="flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-bold text-white shadow-lift transition-all hover:bg-primary-700"
       >
-        <FileText class="h-4 w-4" /> Create article
+        <FileText class="w-4 h-4" /> Create article
       </router-link>
     </div>
 
@@ -88,9 +87,9 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
       <BaseCard>
         <h3 class="text-base font-extrabold text-gray-900 dark:text-white">Content mix</h3>
         <p class="text-xs text-gray-400">Articles by scope (from live data)</p>
-        <div class="mt-5 flex items-center justify-center">
-          <div class="relative flex h-44 w-44 items-center justify-center">
-            <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+        <div class="flex items-center justify-center mt-5">
+          <div class="relative flex items-center justify-center h-44 w-44">
+            <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
               <circle cx="60" cy="60" r="50" fill="none" stroke-width="16" class="stroke-gray-100 dark:stroke-gray-700" stroke-dasharray="314.16" stroke-dashoffset="0" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#4f46e5" stroke-width="16" stroke-dasharray="188.5 125.66" stroke-dashoffset="0" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#38bdf8" stroke-width="16" stroke-dasharray="125.66 188.5" stroke-dashoffset="-188.5" />
@@ -101,12 +100,12 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
             </div>
           </div>
         </div>
-        <div class="mt-4 grid grid-cols-2 gap-3">
-          <div class="rounded-xl bg-primary-50 p-3 dark:bg-primary-900/30">
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="p-3 rounded-xl bg-primary-50 dark:bg-primary-900/30">
             <p class="text-xs font-semibold text-primary-600 dark:text-primary-400">National</p>
             <p class="text-lg font-extrabold text-primary-700 dark:text-primary-300">{{ nationalCount }}</p>
           </div>
-          <div class="rounded-xl bg-sky-50 p-3 dark:bg-sky-900/30">
+          <div class="p-3 rounded-xl bg-sky-50 dark:bg-sky-900/30">
             <p class="text-xs font-semibold text-sky-600 dark:text-sky-400">International</p>
             <p class="text-lg font-extrabold text-sky-700 dark:text-sky-300">{{ internationalCount }}</p>
           </div>
@@ -117,15 +116,15 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
         <h3 class="text-base font-extrabold text-gray-900 dark:text-white">Draft article status</h3>
         <p class="text-xs text-gray-400">Current publication state</p>
         <ul class="mt-4 space-y-3">
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Published</span>
             <span class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{{ articlesStore.published.length }}</span>
           </li>
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Drafts</span>
             <span class="text-lg font-extrabold text-amber-600 dark:text-amber-400">{{ draftCount }}</span>
           </li>
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Comments</span>
             <span class="text-lg font-extrabold text-primary-600 dark:text-primary-400">{{ approvedComments }}</span>
           </li>
@@ -136,15 +135,15 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
         <h3 class="text-base font-extrabold text-gray-900 dark:text-white">Content overview</h3>
         <p class="text-xs text-gray-400">Live totals from the API</p>
         <ul class="mt-4 space-y-3">
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Total articles</span>
             <span class="text-lg font-extrabold text-gray-900 dark:text-white">{{ totalArticles }}</span>
           </li>
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Total views</span>
             <span class="text-lg font-extrabold text-gray-900 dark:text-white">{{ formatNumber(totalViews) }}</span>
           </li>
-          <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-800">
+          <li class="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800">
             <span class="text-sm font-semibold text-gray-600 dark:text-gray-300">Pending comments</span>
             <span class="text-lg font-extrabold text-amber-600 dark:text-amber-400">{{ pendingCommentsList.length }}</span>
           </li>
@@ -154,16 +153,16 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
 
     <div class="grid gap-6 lg:grid-cols-3">
       <BaseCard class="lg:col-span-2">
-        <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-extrabold text-gray-900 dark:text-white">Recent articles</h3>
           <router-link to="/admin/articles" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
         </div>
         <BaseTable :columns="articleColumns" :items="recentArticles">
           <template #cell-title="{ row }">
             <div class="flex items-center gap-3">
-              <img :src="(row as any).thumbnail" class="h-10 w-14 rounded-lg object-cover" alt="" />
+              <img :src="(row as any).thumbnail" class="object-cover h-10 rounded-lg w-14" alt="" />
               <div class="min-w-0">
-                <p class="truncate text-sm font-bold text-gray-900 dark:text-white">{{ (row as any).title }}</p>
+                <p class="text-sm font-bold text-gray-900 truncate dark:text-white">{{ (row as any).title }}</p>
                 <p class="text-xs text-gray-400">{{ (row as any).author.name }}</p>
               </div>
             </div>
@@ -182,22 +181,22 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
 
       <div class="space-y-6">
         <BaseCard>
-          <div class="mb-4 flex items-center justify-between">
+          <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-extrabold text-gray-900 dark:text-white">Pending moderation</h3>
             <router-link to="/admin/comments" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
           </div>
           <div class="space-y-3">
             <div v-for="c in pendingCommentsList" :key="c.id" class="flex items-start gap-3">
               <BaseAvatar :src="c.avatar" :name="c.author" size="sm" />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-xs font-bold text-gray-900 dark:text-white">{{ c.author }}</p>
-                <p class="line-clamp-1 text-xs text-gray-400">{{ c.content }}</p>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-gray-900 truncate dark:text-white">{{ c.author }}</p>
+                <p class="text-xs text-gray-400 line-clamp-1">{{ c.content }}</p>
               </div>
               <span :class="c.status === 'reported' ? 'bg-red-50 text-red-600 dark:bg-red-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'" class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
                 {{ c.status }}
               </span>
             </div>
-            <p v-if="!pendingCommentsList.length" class="py-4 text-center text-xs text-gray-400">All caught up 🎉</p>
+            <p v-if="!pendingCommentsList.length" class="py-4 text-xs text-center text-gray-400">All caught up 🎉</p>
           </div>
         </BaseCard>
 
@@ -211,7 +210,7 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
               class="group flex flex-col items-center gap-2 rounded-xl border border-gray-100 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-card dark:border-gray-700 dark:hover:border-primary-700"
             >
               <span :class="['flex h-10 w-10 items-center justify-center rounded-xl', q.tone]">
-                <component :is="q.icon" class="h-5 w-5" />
+                <component :is="q.icon" class="w-5 h-5" />
               </span>
               <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ q.label }}</span>
             </router-link>

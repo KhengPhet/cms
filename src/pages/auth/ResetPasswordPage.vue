@@ -7,7 +7,7 @@ import Button from '@/components/auth/Button.vue'
 
 const route = useRoute()
 
-const token = typeof route.query.token === 'string' ? route.query.token : 'demo-reset-token'
+// const token = typeof route.query.token === 'string' ? route.query.token : 'demo-reset-token'
 
 const form = reactive({ password: '', confirm: '' })
 const errors = reactive<{ password: string; confirm: string }>({ password: '', confirm: '' })
@@ -64,8 +64,8 @@ async function submit() {
       </form>
     </div>
 
-    <div v-else class="animate-fade-in rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center dark:border-emerald-900/40 dark:bg-emerald-900/20">
-      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl dark:bg-emerald-900/40">
+    <div v-else class="p-6 text-center border animate-fade-in rounded-xl border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-900/20">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto text-2xl rounded-full bg-emerald-100 dark:bg-emerald-900/40">
         ✓
       </div>
       <h3 class="mt-3 text-lg font-extrabold text-gray-900 dark:text-white">Password updated</h3>

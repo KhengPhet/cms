@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
 import AlertMessage from '@/components/auth/AlertMessage.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue'
 import Button from '@/components/auth/Button.vue'
+import { useRouter } from 'vue-router'
 
-const route = useRoute()
+const router = useRouter()
 
 // const token = typeof route.query.token === 'string' ? route.query.token : 'demo-reset-token'
 

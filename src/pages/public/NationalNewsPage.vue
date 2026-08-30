@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useArticlesStore } from '@/stores/articles'
-import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from '@/composables/useI18n'
 import ArticleCard from '@/components/public/ArticleCard.vue'
+import PageBanner from '@/components/public/PageBanner.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
@@ -11,7 +11,6 @@ import { Search, MapPin, TrendingUp, ChevronDown } from '@lucide/vue'
 import { useRoute } from 'vue-router'
 
 const store = useArticlesStore()
-const settings = useSettingsStore()
 const { t } = useI18n()
 const route = useRoute()
 
@@ -85,13 +84,12 @@ const catOptions = computed(() => [
 
 <template>
   <div>
-    <div class="bg-gradient-to-r from-primary-700 to-indigo-700 py-10 text-white">
-      <div class="mx-auto max-w-7xl px-4">
-        <p class="text-xs font-bold uppercase tracking-widest text-indigo-200">{{ settings.appName }} / National</p>
-        <h1 class="mt-1 text-3xl font-extrabold lg:text-4xl">{{ t('nav.national') }} News</h1>
-        <p class="mt-2 max-w-2xl text-sm text-indigo-100">Authoritative coverage from every province — politics, economy, sports and culture.</p>
-      </div>
-    </div>
+    <PageBanner
+      tone="primary"
+      eyebrow="National"
+      :title="`${t('nav.national')} News`"
+      description="Authoritative coverage from every province — politics, economy, sports and culture."
+    />
 
     <section class="page-container py-8">
       <div class="grid gap-6 lg:grid-cols-3">

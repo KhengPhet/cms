@@ -26,11 +26,11 @@ const socials = [
 
 <template>
   <footer class="border-t border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
-    <div class="px-4 py-12 mx-auto max-w-7xl">
+    <div class="px-4 py-12 mx-auto w-[90%]">
       <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div class="flex items-center gap-2.5">
-            <img src="/p-cms.png" alt="logo" class="object-cover w-10 h-10 rounded-xl" />
+            <img src="/p-cms.png" alt="logo" class="h-10 w-10 shrink-0 object-contain" />
             <div class="leading-tight">
               <span class="block text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">{{ settings.appName }}</span>
             </div>

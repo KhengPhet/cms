@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useArticlesStore } from '@/stores/articles'
-import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from '@/composables/useI18n'
 import ArticleCard from '@/components/public/ArticleCard.vue'
+import PageBanner from '@/components/public/PageBanner.vue'
 import SectionHeader from '@/components/public/SectionHeader.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
 import { TrendingUp, Globe2 } from '@lucide/vue'
 import { getImageUrl, imageErrorHandler } from '@/utils/getImageUrl'
 
 const store = useArticlesStore()
-const settings = useSettingsStore()
 const { t } = useI18n()
 
 const country = ref('')
@@ -59,13 +58,12 @@ watch(country, () => (page.value = 1))
 
 <template>
   <div>
-    <div class="bg-gradient-to-r from-sky-700 via-primary-700 to-indigo-700 py-10 text-white">
-      <div class="mx-auto max-w-7xl px-4">
-        <p class="text-xs font-bold uppercase tracking-widest text-sky-200">{{ settings.appName }} / International</p>
-        <h1 class="mt-1 text-3xl font-extrabold lg:text-4xl">{{ t('nav.international') }} News</h1>
-        <p class="mt-2 max-w-2xl text-sm text-sky-100">Breaking world news and analysis from the USA, Europe, Asia and beyond.</p>
-      </div>
-    </div>
+    <PageBanner
+      tone="sky"
+      eyebrow="International"
+      :title="`${t('nav.international')} News`"
+      description="Breaking world news and analysis from the USA, Europe, Asia and beyond."
+    />
 
     <section class="page-container py-8">
       <div class="mb-6 flex items-center gap-2 overflow-x-auto pb-2">

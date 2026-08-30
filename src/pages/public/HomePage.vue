@@ -38,16 +38,16 @@ const recommended = computed(() => {
 
 <template>
   <div>
-    <section class="page-container pt-6">
+    <section class="pt-6 page-container">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <HeroSlider :articles="featured" />
         </div>
-        <div class="card-surface p-4 sm:p-5">
-          <div class="mb-3 flex items-center justify-between">
+        <div class="p-4 card-surface sm:p-5">
+          <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
-              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
-                <Flame class="h-4 w-4" />
+              <span class="flex items-center justify-center w-8 h-8 text-red-600 bg-red-100 rounded-lg dark:bg-red-900/40 dark:text-red-400">
+                <Flame class="w-4 h-4" />
               </span>
               <h2 class="text-base font-extrabold text-gray-900 dark:text-white">{{ t('common.latestNews') }}</h2>
             </div>
@@ -62,14 +62,14 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="page-container py-10">
+    <section class="py-10 page-container">
       <SectionHeader :title="t('common.latestNews')" link-to="/search" :link-label="t('common.viewAll')" />
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <ArticleCard v-for="a in latestGrid" :key="a.id" :article="a" />
       </div>
     </section>
 
-    <section class="page-container py-10">
+    <section class="py-10 page-container">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <SectionHeader :title="t('common.national')" link-to="/national" :link-label="t('common.viewAll')" accent />
@@ -77,10 +77,10 @@ const recommended = computed(() => {
             <ArticleCard v-for="a in national" :key="a.id" :article="a" />
           </div>
         </div>
-        <div class="card-surface h-fit p-5">
-          <div class="mb-4 flex items-center gap-2">
-            <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
-            <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.trending') }}</h3>
+        <div class="p-5 card-surface h-fit">
+          <div class="flex items-center gap-2 mb-4">
+            <TrendingUp class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            <h3 class="text-sm font-extrabold tracking-wide text-gray-900 uppercase dark:text-white">{{ t('common.trending') }}</h3>
           </div>
           <ul class="space-y-3">
             <li v-for="(topic, i) in trendingTopics" :key="topic" class="flex items-center gap-3">
@@ -94,14 +94,14 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="page-container py-10">
+    <section class="py-10 page-container">
       <SectionHeader :title="t('common.international')" link-to="/international" :link-label="t('common.viewAll')" />
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <ArticleCard v-for="a in international" :key="a.id" :article="a" />
       </div>
     </section>
 
-    <section v-if="videoNews.length" class="border-y border-gray-100 bg-gray-50 py-10 dark:border-gray-700 dark:bg-gray-900/50">
+    <section v-if="videoNews.length" class="py-10 border-gray-100 border-y bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
       <div class="page-container">
         <SectionHeader :title="t('home.videoNews')" :link-label="t('common.viewAll')" />
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -110,7 +110,7 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="page-container py-10">
+    <section class="py-10 page-container">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <SectionHeader :title="t('common.recommended')" />
@@ -118,10 +118,10 @@ const recommended = computed(() => {
             <ArticleCard v-for="a in recommended" :key="a.id" :article="a" />
           </div>
         </div>
-        <div class="card-surface h-fit p-5">
-          <div class="mb-4 flex items-center gap-2">
-            <Newspaper class="h-4 w-4 text-primary-600 dark:text-primary-400" />
-            <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.editorsPick') }}</h3>
+        <div class="p-5 card-surface h-fit">
+          <div class="flex items-center gap-2 mb-4">
+            <Newspaper class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            <h3 class="text-sm font-extrabold tracking-wide text-gray-900 uppercase dark:text-white">{{ t('common.editorsPick') }}</h3>
           </div>
           <div class="space-y-3">
             <ArticleCard v-for="a in popular.slice(2, 5)" :key="a.id" :article="a" variant="compact" />

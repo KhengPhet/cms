@@ -18,10 +18,16 @@ import BaseTable from '@/components/ui/BaseTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import { formatNumber, timeAgo } from '@/services/format'
+import { getImageUrl, imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
+import { useDashboardBase } from '@/composables/useDashboardBase'
+import { useSettingsStore } from '@/stores/settings'
 
 const articlesStore = useArticlesStore()
 const commentsStore = useCommentsStore()
 const auth = useAuthStore()
+const settings = useSettingsStore()
+const { base } = useDashboardBase()
+const p = (path: string) => `${base.value}${path}`
 
 const recentArticles = computed(() =>
   [...articlesStore.articles]
@@ -41,17 +47,17 @@ const commentCount = computed(() => commentsStore.comments.length)
 const approvedComments = computed(() => commentsStore.approved.length)
 
 const quickActions = [
-  { label: 'New article', to: '/admin/articles/new', icon: FileText, tone: 'text-primary-600 bg-primary-100' },
-  { label: 'Review comments', to: '/admin/comments', icon: MessageSquare, tone: 'text-amber-600 bg-amber-100' },
-  { label: 'Manage categories', to: '/admin/categories', icon: LayoutGrid, tone: 'text-red-600 bg-red-100' },
-  { label: 'View published', to: '/admin/articles', icon: Globe2, tone: 'text-emerald-600 bg-emerald-100' }
+  { label: 'New article', to: p('/articles/new'), icon: FileText, tone: 'text-primary-600 bg-primary-100' },
+  { label: 'Review comments', to: p('/comments'), icon: MessageSquare, tone: 'text-amber-600 bg-amber-100' },
+  { label: 'Manage categories', to: p('/categories'), icon: LayoutGrid, tone: 'text-red-600 bg-red-100' },
+  { label: 'View published', to: p('/articles'), icon: Globe2, tone: 'text-emerald-600 bg-emerald-100' }
 ]
 
 const articleColumns = [
   { key: 'title', label: 'Article' },
-  { key: 'category', label: 'Category' },
+  { key: 'category', label: 'Category', hideBelow: 'md' as const },
   { key: 'status', label: 'Status' },
-  { key: 'views', label: 'Views', align: 'right' as const },
+  { key: 'views', label: 'Views', align: 'right' as const, hideBelow: 'md' as const },
   { key: 'publishedAt', label: 'Published', align: 'right' as const }
 ]
 
@@ -64,10 +70,10 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white">Good {{ +new Date().getHours() < 12 ? 'morning' : +new Date().getHours() < 18 ? 'afternoon' : 'evening' }}, {{ guest }} 👋</h2>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ today }} — here's what's happening on Global CMS.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ today }} — here's what's happening on {{ settings.appName }}.</p>
       </div>
       <router-link
-        to="/admin/articles/new"
+        :to="p('/articles/new')"
         class="flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-bold text-white shadow-lift transition-all hover:bg-primary-700"
       >
         <FileText class="w-4 h-4" /> Create article
@@ -151,16 +157,16 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
       </BaseCard>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
-      <BaseCard class="lg:col-span-2">
+    <div class="grid min-w-0 gap-6 lg:grid-cols-3">
+      <BaseCard class="min-w-0 lg:col-span-2">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-extrabold text-gray-900 dark:text-white">Recent articles</h3>
-          <router-link to="/admin/articles" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
+          <router-link :to="p('/articles')" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
         </div>
         <BaseTable :columns="articleColumns" :items="recentArticles">
           <template #cell-title="{ row }">
             <div class="flex items-center gap-3">
-              <img :src="(row as any).thumbnail" class="object-cover h-10 rounded-lg w-14" alt="" />
+              <img :src="getImageUrl((row as any).thumbnail) || PLACEHOLDER_IMAGE" class="object-cover h-10 rounded-lg w-14" alt="" @error="imageErrorHandler" />
               <div class="min-w-0">
                 <p class="text-sm font-bold text-gray-900 truncate dark:text-white">{{ (row as any).title }}</p>
                 <p class="text-xs text-gray-400">{{ (row as any).author.name }}</p>
@@ -174,25 +180,27 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
             <span class="font-bold text-gray-900 dark:text-white">{{ formatNumber((row as any).views) }}</span>
           </template>
           <template #cell-publishedAt="{ row }">
-            <span class="text-xs text-gray-400">{{ timeAgo((row as any).publishedAt) }}</span>
+            <span class="text-xs whitespace-nowrap text-gray-400">{{ timeAgo((row as any).publishedAt) }}</span>
           </template>
         </BaseTable>
       </BaseCard>
 
-      <div class="space-y-6">
+      <div class="min-w-0 space-y-6">
         <BaseCard>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-extrabold text-gray-900 dark:text-white">Pending moderation</h3>
-            <router-link to="/admin/comments" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
+            <router-link :to="p('/comments')" class="text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">View all</router-link>
           </div>
           <div class="space-y-3">
             <div v-for="c in pendingCommentsList" :key="c.id" class="flex items-start gap-3">
-              <BaseAvatar :src="c.avatar" :name="c.author" size="sm" />
+              <span class="shrink-0">
+                <BaseAvatar :src="c.avatar" :name="c.author" size="sm" />
+              </span>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-bold text-gray-900 truncate dark:text-white">{{ c.author }}</p>
                 <p class="text-xs text-gray-400 line-clamp-1">{{ c.content }}</p>
               </div>
-              <span :class="c.status === 'reported' ? 'bg-red-50 text-red-600 dark:bg-red-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'" class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
+              <span :class="c.status === 'reported' ? 'bg-red-50 text-red-600 dark:bg-red-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'" class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
                 {{ c.status }}
               </span>
             </div>
@@ -207,12 +215,12 @@ const pendingCommentsList = computed(() => commentsStore.comments.filter(isPendi
               v-for="q in quickActions"
               :key="q.label"
               :to="q.to"
-              class="group flex flex-col items-center gap-2 rounded-xl border border-gray-100 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-card dark:border-gray-700 dark:hover:border-primary-700"
+              class="group flex min-w-0 flex-col items-center gap-2 rounded-xl border border-gray-100 p-3.5 text-center transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-card dark:border-gray-700 dark:hover:border-primary-700"
             >
               <span :class="['flex h-10 w-10 items-center justify-center rounded-xl', q.tone]">
                 <component :is="q.icon" class="w-5 h-5" />
               </span>
-              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ q.label }}</span>
+              <span class="w-full truncate text-xs font-bold text-gray-700 dark:text-gray-300">{{ q.label }}</span>
             </router-link>
           </div>
         </BaseCard>

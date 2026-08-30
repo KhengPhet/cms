@@ -9,7 +9,7 @@ export const LANGUAGES: { code: LanguageCode; label: string; native: string }[] 
 type Dict = Record<string, string>
 
 const en: Dict = {
-  'app.name': 'Global CMS',
+  'app.name': 'P CMS',
   'app.tagline': 'Trusted news. Everywhere.',
   'nav.home': 'Home',
   'nav.national': 'National',
@@ -76,7 +76,7 @@ const en: Dict = {
 }
 
 const km: Dict = {
-  'app.name': 'Global CMS',
+  'app.name': 'P CMS',
   'app.tagline': 'ព័ត៌មានគួរឱ្យទុកចិត្ត គ្រប់ទីកន្លែង',
   'nav.home': 'ទំព័រដើម',
   'nav.national': 'ជាតិ',
@@ -143,7 +143,7 @@ const km: Dict = {
 }
 
 const zh: Dict = {
-  'app.name': 'Global CMS',
+  'app.name': 'P CMS',
   'app.tagline': '值得信赖的新闻，无处不在',
   'nav.home': '首页',
   'nav.national': '国内',

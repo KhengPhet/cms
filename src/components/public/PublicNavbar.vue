@@ -2,31 +2,28 @@
 import { ref } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useAppStore } from '@/stores/app'
-import { useArticlesStore } from '@/stores/articles'
+import { useSettingsStore } from '@/stores/settings'
 import { LANGUAGES } from '@/services/i18n'
 import { useClickOutside } from '@/composables/useClickOutside'
 import { useAuthStore } from '@/stores/auth'
+import { imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
 import {
   Search,
   Menu,
   X,
   ChevronDown,
-  Flame,
-  Phone
 } from '@lucide/vue'
 import router from '@/router'
 
 const { t } = useI18n()
 const app = useAppStore()
-const articlesStore = useArticlesStore()
+const settings = useSettingsStore()
 const auth = useAuthStore()
 
 const mobileOpen = ref(false)
 const langOpen = ref(false)
 const langRoot = ref<HTMLElement | null>(null)
 useClickOutside(langRoot, () => (langOpen.value = false))
-
-const breaking = articlesStore.breaking[0]
 
 const navItems = [
   { label: 'nav.home', to: '/' },
@@ -48,64 +45,38 @@ function goSearch() {
 
 <template>
   <header class="sticky top-0 z-50">
-    <div class="bg-gradient-to-r from-red-600 via-red-500 to-primary-600 text-white">
-      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5 text-xs">
-        <div class="flex min-w-0 items-center gap-2">
-          <span class="inline-flex shrink-0 items-center gap-1.5 rounded bg-white/15 px-2 py-0.5 font-bold uppercase tracking-widest">
-            <Flame class="h-3 w-3" /> {{ t('common.breaking') }}
-          </span>
-          <span v-if="breaking" class="hidden truncate font-medium sm:block">
-            {{ breaking.title }}
-          </span>
-        </div>
-        <div class="hidden shrink-0 items-center gap-4 md:flex">
-          <span class="flex items-center gap-1.5 text-white/80"><Phone class="h-3 w-3" /> +855 23 000 000</span>
-          <span class="text-white/40">|</span>
-          <a href="/contact">Contact Us</a>
-        </div>
-      </div>
-    </div>
-
     <div class="border-b border-gray-100 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
-      <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+      <div class="flex items-center gap-4 px-4 py-3 mx-auto max-w-7xl">
         <button
-          class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 lg:hidden dark:text-gray-300 dark:hover:bg-gray-800"
+          class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 lg:hidden dark:text-gray-300 dark:hover:bg-gray-800"
           @click="mobileOpen = !mobileOpen"
         >
-          <Menu v-if="!mobileOpen" class="h-6 w-6" />
-          <X v-else class="h-6 w-6" />
+          <Menu v-if="!mobileOpen" class="w-6 h-6" />
+          <X v-else class="w-6 h-6" />
         </button>
 
         <a href="/" class="flex shrink-0 items-center gap-2.5" @click.prevent="router.push('/')">
-          <svg width="40" height="40" viewBox="0 0 48 48" class="rounded-xl">
-            <rect width="48" height="48" rx="12" fill="#4f46e5" />
-            <path d="M13 14h22v6H13z" fill="#fff" />
-            <path d="M18 24h12v4H18z" fill="#c7d2fe" />
-            <path d="M18 31h12v4H18z" fill="#c7d2fe" />
-          </svg>
+          <img src="/p-cms.png" alt="logo" class="object-cover w-10 h-10 rounded-xl" />
           <div class="leading-tight">
-            <span class="block text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">Global CMS</span>
-            <span class="block text-[10px] font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
-              {{ t('app.tagline') }}
-            </span>
+            <span class="block text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">{{ settings.appName }}</span>
           </div>
         </a>
 
-        <div class="ml-auto flex items-center gap-2">
+        <div class="flex items-center gap-2 ml-auto">
           <div class="relative hidden md:block">
             <input
               placeholder="Search…"
-              class="w-48 rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm transition-all focus:w-64 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              class="w-48 py-2 pr-4 text-sm transition-all border border-gray-200 rounded-full bg-gray-50 pl-9 focus:w-64 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               @keydown.enter="goSearch"
             />
-            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search class="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
           </div>
 
           <button
-            class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
+            class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
             @click="goSearch"
           >
-            <Search class="h-5 w-5" />
+            <Search class="w-5 h-5" />
           </button>
 
           <div ref="langRoot" class="relative hidden sm:block">
@@ -124,7 +95,7 @@ function goSearch() {
                 <button
                   v-for="l in LANGUAGES"
                   :key="l.code"
-                  class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                  class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                   :class="app.language === l.code ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-200'"
                   @click="app.setLanguage(l.code); langOpen = false"
                 >
@@ -138,16 +109,16 @@ function goSearch() {
           <router-link
             v-if="!auth.isAuthenticated"
             to="/login"
-            class="hidden rounded-lg bg-primary-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-primary-700 sm:block"
+            class="hidden px-4 py-2 text-sm font-bold text-white transition-colors rounded-lg bg-primary-600 hover:bg-primary-700 sm:block"
           >
             {{ t('auth.login') }}
           </router-link>
           <router-link
             v-else
             to="/profile"
-            class="hidden items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3 transition-colors hover:bg-gray-50 sm:flex dark:border-gray-600 dark:hover:bg-gray-800"
+            class="items-center hidden gap-2 py-1 pl-1 pr-3 transition-colors border border-gray-200 rounded-full hover:bg-gray-50 sm:flex dark:border-gray-600 dark:hover:bg-gray-800"
           >
-            <img v-if="auth.user" :src="auth.user.avatar" class="h-8 w-8 rounded-full" alt="avatar" />
+            <img v-if="auth.user" :src="auth.user.avatar || PLACEHOLDER_IMAGE" class="w-8 h-8 rounded-full" alt="avatar" @error="imageErrorHandler" />
             <span v-if="auth.user" class="text-sm font-semibold text-gray-700 dark:text-gray-200">
               {{ auth.user.name.split(' ')[0] }}
             </span>
@@ -155,12 +126,12 @@ function goSearch() {
         </div>
       </div>
 
-      <nav class="mx-auto hidden max-w-7xl items-center gap-1 px-4 lg:flex">
+      <nav class="items-center hidden gap-1 px-4 mx-auto max-w-7xl lg:flex">
         <router-link
           v-for="item in navItems"
           :key="item.label"
           :to="item.to"
-          class="border-b-2 px-3 py-2.5 text-sm font-semibold transition-colors"
+          class="whitespace-nowrap border-b-2 px-2.5 py-2.5 text-sm font-semibold transition-colors xl:px-3"
           :class="
             $route.path === item.to
               ? 'border-primary-600 text-primary-700 dark:border-primary-400 dark:text-primary-400'
@@ -173,7 +144,7 @@ function goSearch() {
     </div>
 
     <Transition name="mobile">
-      <div v-if="mobileOpen" class="border-t border-gray-100 bg-white px-4 pb-6 pt-3 shadow-card lg:hidden dark:border-gray-700 dark:bg-gray-900">
+      <div v-if="mobileOpen" class="px-4 pt-3 pb-6 bg-white border-t border-gray-100 shadow-card lg:hidden dark:border-gray-700 dark:bg-gray-900">
         <router-link
           v-for="item in navItems"
           :key="item.label"
@@ -183,20 +154,30 @@ function goSearch() {
         >
           {{ t(item.label) }}
         </router-link>
-        <div class="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
-          <button
-            v-for="l in LANGUAGES"
-            :key="l.code"
-            class="flex-1 rounded-lg border px-3 py-2 text-xs font-bold"
-            :class="
-              app.language === l.code
-                ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
-                : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'
-            "
-            @click="app.setLanguage(l.code)"
+        <div class="flex flex-col gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700">
+          <router-link
+            v-if="!auth.isAuthenticated"
+            to="/login"
+            class="rounded-lg bg-primary-600 px-3 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-primary-700"
+            @click="mobileOpen = false"
           >
-            {{ l.native }}
-          </button>
+            {{ t('auth.login') }}
+          </router-link>
+          <div class="flex items-center gap-2">
+            <button
+              v-for="l in LANGUAGES"
+              :key="l.code"
+              class="flex-1 px-3 py-2 text-xs font-bold border rounded-lg"
+              :class="
+                app.language === l.code
+                  ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
+                  : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'
+              "
+              @click="app.setLanguage(l.code)"
+            >
+              {{ l.native }}
+            </button>
+          </div>
         </div>
       </div>
     </Transition>

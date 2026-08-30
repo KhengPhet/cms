@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { Save, Globe, Search, Link2, Languages, Upload, Check, ChevronRight } from '@lucide/vue'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useToast } from '@/composables/useToast'
 import { LANGUAGES } from '@/services/i18n'
+import { settingApi, type SettingsMap } from '@/services/settingApi'
+import { useSettingsStore } from '@/stores/settings'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -11,18 +13,19 @@ import SocialIcon from '@/components/public/SocialIcon.vue'
 
 const notifStore = useNotificationsStore()
 const toast = useToast()
+const settingsStore = useSettingsStore()
 
 const general = reactive({
-  name: 'Global CMS Platform',
+  name: 'P CMS Platform',
   tagline: 'Trusted news. Everywhere.',
   description: 'A modern content management system delivering national and international news, articles and media.',
   email: 'contact@globalcms.com'
 })
 
 const seo = reactive({
-  metaTitle: 'Global CMS Platform — National & International News',
+  metaTitle: 'P CMS Platform — National & International News',
   metaDescription: 'Breaking news, in-depth analysis and trusted reporting from across the country and around the world.',
-  keywords: 'news, world news, national news, international, technology, politics, business, sports, Global CMS'
+  keywords: 'news, world news, national news, international, technology, politics, business, sports, P CMS'
 })
 
 const social = reactive({
@@ -33,19 +36,89 @@ const social = reactive({
 })
 
 const defaultLanguage = ref<'en' | 'km' | 'zh'>('en')
+const saving = ref<string | null>(null)
 
-function save(type: string) {
-  toast.success(`${type} settings saved`)
-  notifStore.addActivity({
-    id: 'l' + Date.now(),
-    user: 'Sokha Mony',
-    avatar: '',
-    action: 'Updated settings',
-    entity: type + ' settings',
-    ip: '203.0.113.10',
-    date: new Date().toISOString()
-  })
+const KEY = {
+  siteName: 'site.name',
+  siteTagline: 'site.tagline',
+  siteDescription: 'site.description',
+  siteEmail: 'site.email',
+  seoTitle: 'seo.meta_title',
+  seoDescription: 'seo.meta_description',
+  seoKeywords: 'seo.keywords',
+  fb: 'social.facebook',
+  tg: 'social.telegram',
+  yt: 'social.youtube',
+  tw: 'social.twitter',
+  lang: 'language.default'
 }
+
+function applySettings(map: SettingsMap) {
+  const g = map[KEY.siteName]; if (g) general.name = g
+  const t = map[KEY.siteTagline]; if (t) general.tagline = t
+  const d = map[KEY.siteDescription]; if (d) general.description = d
+  const e = map[KEY.siteEmail]; if (e) general.email = e
+  const m = map[KEY.seoTitle]; if (m) seo.metaTitle = m
+  const md = map[KEY.seoDescription]; if (md) seo.metaDescription = md
+  const mk = map[KEY.seoKeywords]; if (mk) seo.keywords = mk
+  const fb = map[KEY.fb]; if (fb) social.facebook = fb
+  const tg = map[KEY.tg]; if (tg) social.telegram = tg
+  const yt = map[KEY.yt]; if (yt) social.youtube = yt
+  const tw = map[KEY.tw]; if (tw) social.twitter = tw
+  const lang = map[KEY.lang]
+  if (lang === 'en' || lang === 'km' || lang === 'zh') defaultLanguage.value = lang
+}
+
+async function save(type: string) {
+  saving.value = type
+  const payload: SettingsMap = {}
+  if (type === 'General') {
+    payload[KEY.siteName] = general.name
+    payload[KEY.siteTagline] = general.tagline
+    payload[KEY.siteDescription] = general.description
+    payload[KEY.siteEmail] = general.email
+  } else if (type === 'SEO') {
+    payload[KEY.seoTitle] = seo.metaTitle
+    payload[KEY.seoDescription] = seo.metaDescription
+    payload[KEY.seoKeywords] = seo.keywords
+  } else if (type === 'Social') {
+    payload[KEY.fb] = social.facebook
+    payload[KEY.tg] = social.telegram
+    payload[KEY.yt] = social.youtube
+    payload[KEY.tw] = social.twitter
+  } else if (type === 'Language') {
+    payload[KEY.lang] = defaultLanguage.value
+  }
+  try {
+    const updated = await settingApi.update(payload)
+    applySettings(updated)
+    settingsStore.apply(updated)
+    toast.success(`${type} settings saved`)
+    notifStore.addActivity({
+      id: 'l' + Date.now(),
+      user: 'Sokha Mony',
+      avatar: '',
+      action: 'Updated settings',
+      entity: type + ' settings',
+      ip: '203.0.113.10',
+      date: new Date().toISOString()
+    })
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : 'Failed to save settings')
+  } finally {
+    saving.value = null
+  }
+}
+
+onMounted(async () => {
+  try {
+    const map = await settingApi.getAll()
+    applySettings(map)
+  } catch {
+    // Settings not yet saved — keep defaults.
+  }
+})
+
 </script>
 
 <template>
@@ -89,7 +162,7 @@ function save(type: string) {
               </div>
             </div>
             <div class="flex justify-end">
-              <BaseButton @click="save('General')"><Save class="h-4 w-4" /> Save changes</BaseButton>
+              <BaseButton :loading="saving === 'General'" :disabled="saving !== null" @click="save('General')"><Save class="h-4 w-4" /> Save changes</BaseButton>
             </div>
           </div>
         </BaseCard>
@@ -109,7 +182,7 @@ function save(type: string) {
             <BaseInput v-model="seo.metaDescription" label="Meta description" textarea :rows="3" :hint="`${seo.metaDescription.length} / 160 characters`" />
             <BaseInput v-model="seo.keywords" label="Keywords" placeholder="comma, separated, keywords" />
             <div class="flex justify-end">
-              <BaseButton @click="save('SEO')"><Save class="h-4 w-4" /> Save SEO</BaseButton>
+              <BaseButton :loading="saving === 'SEO'" :disabled="saving !== null" @click="save('SEO')"><Save class="h-4 w-4" /> Save SEO</BaseButton>
             </div>
           </div>
         </BaseCard>
@@ -146,7 +219,7 @@ function save(type: string) {
               </label>
               <input v-model="social.twitter" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:border-primary-400 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
             </div>
-            <BaseButton variant="success" size="sm" block @click="save('Social')"><Save class="h-4 w-4" /> Save social</BaseButton>
+            <BaseButton variant="success" size="sm" block :loading="saving === 'Social'" :disabled="saving !== null" @click="save('Social')"><Save class="h-4 w-4" /> Save social</BaseButton>
           </div>
         </BaseCard>
 
@@ -168,7 +241,8 @@ function save(type: string) {
               <Check v-if="defaultLanguage === l.code" class="h-4 w-4" />
             </button>
           </div>
-          <button class="mt-3 flex w-full items-center justify-center gap-1 text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">
+          <BaseButton variant="outline" size="sm" block class="mt-3" :loading="saving === 'Language'" :disabled="saving !== null" @click="save('Language')"><Save class="h-4 w-4" /> Save language</BaseButton>
+          <button class="mt-2 flex w-full items-center justify-center gap-1 text-xs font-bold text-primary-600 hover:underline dark:text-primary-400">
             Manage translations <ChevronRight class="h-3.5 w-3.5" />
           </button>
         </BaseCard>

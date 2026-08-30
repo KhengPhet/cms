@@ -6,6 +6,7 @@ import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import { timeAgo } from '@/services/format'
 import { useAuthStore } from '@/stores/auth'
+import { getAuthorImageUrl, imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
 
 const props = defineProps<{
   articleId: string
@@ -64,7 +65,7 @@ async function addComment() {
 
     <form
       v-if="auth.isAuthenticated"
-      class="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-soft dark:border-gray-700 dark:bg-gray-800"
+      class="card-surface mt-4 p-4"
       @submit.prevent="addComment"
     >
       <textarea
@@ -83,14 +84,14 @@ async function addComment() {
         </button>
       </div>
     </form>
-    <p v-else class="mt-4 rounded-2xl border border-gray-100 bg-white p-4 text-center text-sm text-gray-400 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+    <p v-else class="card-surface mt-4 p-4 text-center text-sm text-gray-400 shadow-soft dark:border-gray-700 dark:bg-gray-800">
       <router-link to="/login" class="font-semibold text-primary-600 hover:underline">Sign in</router-link> to join the discussion.
     </p>
 
     <div class="mt-6 space-y-4">
       <p v-if="!list.length" class="py-6 text-center text-sm text-gray-400">Be the first to comment.</p>
-      <article v-for="c in list" :key="c.id" class="flex gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-soft dark:border-gray-700 dark:bg-gray-800">
-        <img :src="c.avatar" :alt="c.author" class="h-10 w-10 shrink-0 rounded-full" />
+      <article v-for="c in list" :key="c.id" class="card-surface flex gap-3 p-4">
+        <img :src="getAuthorImageUrl(c.avatar) || PLACEHOLDER_IMAGE" :alt="c.author" class="h-10 w-10 shrink-0 rounded-full" @error="imageErrorHandler" />
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center justify-between gap-1">
             <div class="flex items-center gap-2">

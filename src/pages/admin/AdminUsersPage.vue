@@ -1,286 +1,249 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Plus, Pencil, Trash2, MoreHorizontal, Shield, Ban, CheckCircle2, Download } from '@lucide/vue'
-import { users } from '@/services/data'
-import { useNotificationsStore } from '@/stores/notifications'
+import { computed, onMounted, ref } from 'vue'
+import { Users, UserCheck, PenTool, ShieldCheck, Trash2 } from '@lucide/vue'
+import { userApi, type User } from '@/services/userApi'
 import { useToast } from '@/composables/useToast'
+import { getUserThumbnailUrl } from '@/utils/getImageUrl'
+import { handleUnauthorized } from '@/services/api'
+import { useRouter } from 'vue-router'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseTable from '@/components/ui/BaseTable.vue'
+import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ConfirmationModal from '@/components/ui/ConfirmationModal.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
-import BaseAvatar from '@/components/ui/BaseAvatar.vue'
-import BaseDropdown from '@/components/ui/BaseDropdown.vue'
 import { formatDate } from '@/services/format'
-import type { User, UserRole, UserStatus } from '@/types'
 
-const notifStore = useNotificationsStore()
 const toast = useToast()
+const router = useRouter()
 
-const items = ref<User[]>([...users])
-const query = ref('')
-const roleFilter = ref('')
-const statusFilter = ref('')
-const page = ref(1)
-const PER_PAGE = 6
-
-const roleColors: Record<UserRole, string> = {
-  'Super Admin': 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  Admin: 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-  Editor: 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
-  Author: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  User: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-}
-
-const filtered = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  return items.value.filter((u) => {
-    if (q && !(u.name + u.username + u.email).toLowerCase().includes(q)) return false
-    if (roleFilter.value && u.role !== roleFilter.value) return false
-    if (statusFilter.value && u.status !== statusFilter.value) return false
-    return true
-  })
-})
-
-const paged = computed(() => {
-  const start = (page.value - 1) * PER_PAGE
-  return filtered.value.slice(start, start + PER_PAGE)
-})
+const users = ref<User[]>([])
+const search = ref('')
+const roleFilter = ref('all')
+const loading = ref(true)
+const error = ref('')
+const toDelete = ref<User | null>(null)
 
 const roleOptions = [
-  { label: 'All roles', value: '' },
-  { label: 'Super Admin', value: 'Super Admin' },
-  { label: 'Admin', value: 'Admin' },
-  { label: 'Editor', value: 'Editor' },
-  { label: 'Author', value: 'Author' },
-  { label: 'User', value: 'User' }
-]
-const statusOptions = [
-  { label: 'All statuses', value: '' },
-  { label: 'Active', value: 'active' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Suspended', value: 'suspended' }
+  { label: 'All roles', value: 'all' },
+  { label: 'User', value: 'user' },
+  { label: 'Author', value: 'author' },
+  { label: 'Admin', value: 'admin' }
 ]
 
 const columns = [
   { key: 'user', label: 'User' },
   { key: 'role', label: 'Role' },
   { key: 'status', label: 'Status' },
-  { key: 'createdAt', label: 'Created', align: 'right' as const },
+  { key: 'created', label: 'Created' },
   { key: 'actions', label: '', align: 'right' as const }
 ]
 
-const modalOpen = ref(false)
-const editingId = ref<string | null>(null)
-const toDelete = ref<string | null>(null)
+// Statistics (computed from the loaded users).
+const totalUsers = computed(() => users.value.length)
+const activeUsers = computed(() => users.value.length)
+const totalAuthors = computed(
+  () => users.value.filter((u) => u.role.toLowerCase() === 'author').length
+)
+const totalAdmins = computed(
+  () => users.value.filter((u) => u.role.toLowerCase() === 'admin').length
+)
 
-const form = ref({ name: '', username: '', email: '', role: 'Author' as UserRole, status: 'active' as UserStatus })
-
-function openNew() {
-  editingId.value = null
-  form.value = { name: '', username: '', email: '', role: 'Author', status: 'active' }
-  modalOpen.value = true
-}
-
-function openEdit(u: User) {
-  editingId.value = u.id
-  form.value = { name: u.name, username: u.username, email: u.email, role: u.role, status: u.status }
-  modalOpen.value = true
-}
-
-function save() {
-  if (!form.value.name.trim() || !form.value.email.trim()) {
-    toast.error('Name and email are required')
-    return
-  }
-  if (editingId.value) {
-    const u = items.value.find((x) => x.id === editingId.value)
-    if (u) Object.assign(u, form.value)
-    toast.success('User updated')
-  } else {
-    items.value.unshift({
-      id: 'u' + Date.now(),
-      name: form.value.name,
-      username: form.value.username || form.value.name.toLowerCase().replace(/\s+/g, ''),
-      email: form.value.email,
-      avatar: '',
-      role: form.value.role,
-      status: form.value.status,
-      createdAt: new Date().toISOString().slice(0, 10),
-      savedArticles: [],
-      comments: []
-    })
-    toast.success('User created')
-  }
-  notifStore.addActivity({
-    id: 'l' + Date.now(),
-    user: 'Sokha Mony',
-    avatar: users[0].avatar,
-    action: editingId.value ? 'Edited user' : 'Created user',
-    entity: form.value.name,
-    ip: '203.0.113.10',
-    date: new Date().toISOString()
+// Search by name, username or email (client-side, on the already-loaded users).
+const filteredUsers = computed(() => {
+  const keyword = search.value.toLowerCase().trim()
+  return users.value.filter((user) => {
+    if (keyword && !(
+      user.name.toLowerCase().includes(keyword) ||
+      user.username.toLowerCase().includes(keyword) ||
+      user.email.toLowerCase().includes(keyword)
+    )) {
+      return false
+    }
+    if (roleFilter.value !== 'all' && user.role.toLowerCase() !== roleFilter.value) {
+      return false
+    }
+    return true
   })
-  modalOpen.value = false
+})
+
+function avatarFor(user: User): string {
+  return user.thumbnail ? getUserThumbnailUrl(user.thumbnail) : ''
 }
 
-function commitDelete() {
-  if (toDelete.value) {
-    items.value = items.value.filter((u) => u.id !== toDelete.value)
-    toast.success('User deleted')
-    toDelete.value = null
+function roleColor(role: string): string {
+  const r = role.toLowerCase()
+  if (r === 'admin') return 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+  if (r === 'author') return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+}
+
+async function loadUsers() {
+  loading.value = true
+  error.value = ''
+  try {
+    users.value = await userApi.getAll()
+  } catch (err) {
+    console.error('Failed to load users.', err)
+    const status = (err as { status?: number }).status
+    if (status === 401) {
+      handleUnauthorized(401)
+      router.push('/login')
+    }
+    error.value = 'Failed to load users.'
+  } finally {
+    loading.value = false
   }
 }
 
-function toggleSuspend(u: User) {
-  u.status = u.status === 'suspended' ? 'active' : 'suspended'
-  toast.success(`${u.name} ${u.status === 'suspended' ? 'suspended' : 'reactivated'}`)
+async function confirmDelete() {
+  if (!toDelete.value) return
+  const target = toDelete.value
+  toDelete.value = null
+  try {
+    await userApi.delete(target.id)
+    users.value = users.value.filter((u) => u.id !== target.id)
+    toast.success(`${target.name} deleted`)
+  } catch (err) {
+    console.error('Failed to delete user.', err)
+    toast.error('Failed to delete user')
+  }
 }
 
-function setRole(u: User, role: UserRole) {
-  u.role = role
-  toast.success(`${u.name} is now ${role}`)
+function requestDelete(user: User) {
+  toDelete.value = user
 }
+
+onMounted(async () => {
+  await loadUsers()
+})
 </script>
 
 <template>
   <div class="space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <p class="text-sm text-gray-500 dark:text-gray-400">{{ items.length }} users · {{ items.filter((u) => u.status === 'active').length }} active</p>
-        <span class="flex items-center gap-1 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-600 dark:bg-purple-900/30 dark:text-purple-300">
-          <Shield class="h-3.5 w-3.5" /> Role-based access
-        </span>
-      </div>
-      <div class="flex items-center gap-2">
-        <BaseButton variant="outline" size="sm"><Download class="h-4 w-4" /> Export</BaseButton>
-        <BaseButton @click="openNew"><Plus class="h-4 w-4" /> Add user</BaseButton>
+      <div>
+        <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">User Management</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Manage accounts stored in PostgreSQL.</p>
       </div>
     </div>
 
-    <div class="grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 md:grid-cols-3 dark:border-gray-700 dark:bg-gray-800">
-      <BaseInput v-model="query" icon="search" placeholder="Search name, username or email…" />
-      <BaseSelect v-model="roleFilter" :options="roleOptions" placeholder="All roles" />
-      <BaseSelect v-model="statusFilter" :options="statusOptions" placeholder="All statuses" />
+    <!-- Statistics -->
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div class="card-surface p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 text-purple-600 rounded-xl bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300">
+            <Users class="w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ totalUsers }}</p>
+            <p class="text-xs text-gray-400">Total Users</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-surface p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 text-green-600 rounded-xl bg-green-50 dark:bg-green-900/30 dark:text-green-300">
+            <UserCheck class="w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ activeUsers }}</p>
+            <p class="text-xs text-gray-400">Active Users</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-surface p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300">
+            <PenTool class="w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ totalAuthors }}</p>
+            <p class="text-xs text-gray-400">Authors</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-surface p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 text-red-600 rounded-xl bg-red-50 dark:bg-red-900/30 dark:text-red-300">
+            <ShieldCheck class="w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ totalAdmins }}</p>
+            <p class="text-xs text-gray-400">Admins</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <BaseTable :columns="columns" :items="paged">
+    <!-- Search + filter -->
+    <div class="card-surface grid gap-3 p-4 md:grid-cols-3">
+      <BaseInput v-model="search" icon="search" placeholder="Search name, username or email…" />
+      <BaseSelect v-model="roleFilter" :options="roleOptions"/>
+    </div>
+
+    <!-- Error state -->
+    <div v-if="error" class="p-5 text-sm font-semibold text-center text-red-600 border border-red-200 rounded-2xl bg-red-50 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+      {{ error }}
+      <button class="ml-2 underline" @click="loadUsers">Retry</button>
+    </div>
+
+    <!-- Table -->
+    <BaseTable
+      :columns="columns"
+      :items="filteredUsers"
+      :loading="loading"
+      empty-text="No users found."
+    >
       <template #cell-user="{ row }">
         <div class="flex items-center gap-3">
-          <BaseAvatar :src="(row as any).avatar" :name="(row as any).name" size="md" />
+          <BaseAvatar :src="avatarFor(row as User)" :name="(row as User).name" size="md" />
           <div>
-            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ (row as any).name }}</p>
-            <p class="text-xs text-gray-400">@{{ (row as any).username }} · {{ (row as any).email }}</p>
+            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ (row as User).name }}</p>
+            <p class="text-xs text-gray-400">@{{ (row as User).username }} · {{ (row as User).email }}</p>
           </div>
         </div>
       </template>
       <template #cell-role="{ row }">
-        <span :class="['rounded-full px-2.5 py-1 text-[11px] font-bold', roleColors[(row as any).role as UserRole]]">
-          {{ (row as any).role }}
+        <span :class="['rounded-full px-2.5 py-1 text-[11px] font-bold capitalize', roleColor((row as User).role)]">
+          {{ (row as User).role }}
         </span>
       </template>
-      <template #cell-status="{ row }">
-        <StatusBadge :status="(row as any).status" kind="user" />
+      <template #cell-status>
+        <StatusBadge status="active" kind="user" />
       </template>
-      <template #cell-createdAt="{ row }">
-        <span class="whitespace-nowrap text-xs text-gray-400">{{ formatDate((row as any).createdAt) }}</span>
+      <template #cell-created="{ row }">
+        <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate((row as User).created_at) }}</span>
       </template>
       <template #cell-actions="{ row }">
         <div class="flex items-center justify-end gap-1">
-          <button class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/40" title="Edit" @click="openEdit(row as any)">
-            <Pencil class="h-4 w-4" />
-          </button>
           <button
-            class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-900/30"
-            :title="(row as any).status === 'suspended' ? 'Activate' : 'Suspend'"
-            @click="toggleSuspend(row as any)"
+            class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
+            title="Delete"
+            @click="requestDelete(row as User)"
           >
-            <Ban v-if="(row as any).status !== 'suspended'" class="h-4 w-4" />
-            <CheckCircle2 v-else class="h-4 w-4" />
+            <Trash2 class="w-4 h-4" />
           </button>
-          <button class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30" title="Delete" @click="toDelete = (row as any).id">
-            <Trash2 class="h-4 w-4" />
-          </button>
-          <BaseDropdown align="right" width="w-44">
-            <template #trigger>
-              <span class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700">
-                <MoreHorizontal class="h-4 w-4" />
-              </span>
-            </template>
-            <p class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Set role</p>
-            <button
-              v-for="r in (['Super Admin', 'Admin', 'Editor', 'Author', 'User'] as UserRole[])"
-              :key="r"
-              class="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
-              :class="(row as any).role === r ? 'text-primary-600 dark:text-primary-400' : ''"
-              @click="setRole(row as any, r)"
-            >
-              <Shield class="h-3.5 w-3.5" /> {{ r }}
-            </button>
-          </BaseDropdown>
         </div>
+      </template>
+      <template #empty>
+        <p v-if="loading" class="text-sm text-gray-400">Loading users…</p>
+        <p v-else class="text-sm text-gray-400">
+          {{
+            filteredUsers.length === 0 && (search || roleFilter !== 'all')
+              ? 'No users match your search.'
+              : 'No users found.'
+          }}
+        </p>
       </template>
     </BaseTable>
-
-    <div class="flex justify-center">
-      <BasePagination v-model:current="page" :total="filtered.length" :per-page="PER_PAGE" />
-    </div>
-
-    <div class="rounded-2xl border border-gray-100 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-      <h3 class="mb-3 text-sm font-extrabold text-gray-900 dark:text-white">Permission matrix</h3>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-gray-100 dark:border-gray-700">
-              <th class="px-3 py-2 font-bold text-gray-500">Role</th>
-              <th v-for="p in ['Articles', 'Media', 'Users', 'Comments', 'Settings']" :key="p" class="px-3 py-2 text-center font-bold text-gray-500">{{ p }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-            <tr v-for="r in ['Super Admin', 'Admin', 'Editor', 'Author', 'User']" :key="r">
-              <td class="px-3 py-2.5 font-bold text-gray-800 dark:text-gray-200">{{ r }}</td>
-              <td v-for="p in 5" :key="p" class="px-3 py-2.5 text-center">
-                <span
-                  :class="r === 'User' && p === 5 ? 'text-red-400' : r === 'User' && p > 1 ? 'text-gray-300' : r === 'Author' && p > 2 ? 'text-amber-400' : 'text-emerald-500'"
-                  class="font-bold"
-                >
-                  {{ r === 'User' || (r === 'Author' && p > 2) ? '·' : '✓' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <BaseModal :open="modalOpen" :title="editingId ? 'Edit user' : 'Add user'" @close="modalOpen = false">
-      <div class="space-y-4">
-        <BaseInput v-model="form.name" label="Full name" required placeholder="Jane Doe" />
-        <div class="grid grid-cols-2 gap-3">
-          <BaseInput v-model="form.username" label="Username" placeholder="janedoe" />
-          <BaseInput v-model="form.email" label="Email" type="email" required placeholder="jane@example.com" />
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <BaseSelect v-model="form.role" :options="roleOptions.filter((o) => o.value).map((o) => ({ label: o.value, value: o.value }))" label="Role" />
-          <BaseSelect v-model="form.status" :options="statusOptions.filter((o) => o.value).map((o) => ({ label: o.value, value: o.value }))" label="Status" />
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <BaseButton variant="outline" size="sm" @click="modalOpen = false">Cancel</BaseButton>
-          <BaseButton size="sm" @click="save">{{ editingId ? 'Save changes' : 'Create user' }}</BaseButton>
-        </div>
-      </template>
-    </BaseModal>
 
     <ConfirmationModal
       :open="!!toDelete"
       title="Delete user?"
-      message="This permanently removes the user account and revokes their access immediately."
+      :message="`Delete ${toDelete?.name ?? ''}? This permanently removes the account from PostgreSQL.`"
       confirm-label="Delete"
-      @confirm="commitDelete"
+      @confirm="confirmDelete"
       @cancel="toDelete = null"
     />
   </div>

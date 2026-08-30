@@ -94,7 +94,7 @@ watch(
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-10">
+  <div class="page-container py-10">
     <div class="mx-auto max-w-3xl text-center">
       <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white lg:text-4xl">{{ t('common.search') }}</h1>
       <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Search across {{ store.published.length }} published articles, by keyword, category, author or country.</p>
@@ -122,7 +122,7 @@ watch(
     </div>
 
     <Transition name="fade">
-      <div v-if="showFilters" class="mx-auto mt-5 max-w-4xl rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+      <div v-if="showFilters" class="card-surface mx-auto mt-5 max-w-4xl p-5">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <BaseSelect v-model="catId" :options="catOptions" :label="t('common.allCategories')" />
           <BaseSelect v-model="country" :options="countryOptions" :label="t('common.allCountries')" />

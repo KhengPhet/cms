@@ -2,8 +2,10 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Globe, LayoutDashboard, Users, FileText } from '@lucide/vue'
+import { useSettingsStore } from '@/stores/settings'
 
 const route = useRoute()
+const settings = useSettingsStore()
 
 const page = computed(() => {
   const map: Record<string, { title: string; sub: string }> = {
@@ -44,7 +46,7 @@ const features = [
             <Globe class="h-6 w-6" />
           </div>
           <div>
-            <p class="text-lg font-extrabold leading-none tracking-tight">Global CMS</p>
+            <p class="text-lg font-extrabold leading-none tracking-tight">{{ settings.appName }}</p>
             <p class="text-xs text-primary-200">Content Management Platform</p>
           </div>
         </div>
@@ -83,7 +85,7 @@ const features = [
           <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white">
             <Globe class="h-5 w-5" />
           </div>
-          <span class="text-lg font-extrabold text-gray-900 dark:text-white">Global CMS</span>
+          <span class="text-lg font-extrabold text-gray-900 dark:text-white">{{ settings.appName }}</span>
         </div>
 
         <div class="animate-slide-up rounded-2xl border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-800 dark:bg-gray-900">
@@ -97,7 +99,7 @@ const features = [
         </div>
 
         <p class="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">
-          © {{ new Date().getFullYear() }} Global CMS Platform. All rights reserved.
+          © {{ new Date().getFullYear() }} {{ settings.appName }}. All rights reserved.
         </p>
       </div>
     </main>

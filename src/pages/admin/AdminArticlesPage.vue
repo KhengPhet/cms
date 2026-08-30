@@ -13,10 +13,14 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ConfirmationModal from '@/components/ui/ConfirmationModal.vue'
 import BaseDropdown from '@/components/ui/BaseDropdown.vue'
 import { formatDate } from '@/services/format'
+import { getImageUrl, imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
+import { useDashboardBase } from '@/composables/useDashboardBase'
 
 const store = useArticlesStore()
 const notifStore = useNotificationsStore()
 const toast = useToast()
+const { base } = useDashboardBase()
+const p = (path: string) => `${base.value}${path}`
 
 const query = ref('')
 const statusFilter = ref('')
@@ -127,7 +131,7 @@ function confirmBulkDelete() {
         <BaseButton v-if="selected.length" variant="danger" size="sm" @click="toBulkDelete = true">
           <Trash2 class="h-4 w-4" /> Delete {{ selected.length }}
         </BaseButton>
-        <router-link to="/admin/articles/new">
+        <router-link :to="p('/articles/new')">
           <BaseButton>
             <Plus class="h-4 w-4" /> New article
           </BaseButton>
@@ -135,7 +139,7 @@ function confirmBulkDelete() {
       </div>
     </div>
 
-    <div class="grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-soft md:grid-cols-3 dark:border-gray-700 dark:bg-gray-800">
+    <div class="card-surface grid gap-3 p-4 md:grid-cols-3">
       <BaseInput v-model="query" icon="search" placeholder="Search title, author, tags…" />
       <BaseSelect v-model="statusFilter" :options="statusOptions" placeholder="All statuses" />
       <BaseSelect v-model="catFilter" :options="catOptions" placeholder="All categories" />
@@ -154,7 +158,7 @@ function confirmBulkDelete() {
             class="h-4 w-4 rounded border-gray-300 accent-primary-600"
             @click.stop="toggleRow((row as any).id)"
           />
-          <img :src="(row as any).thumbnail" class="h-10 w-14 shrink-0 rounded-lg object-cover" alt="" />
+          <img :src="getImageUrl((row as any).thumbnail) || PLACEHOLDER_IMAGE" class="h-10 w-14 shrink-0 rounded-lg object-cover" alt="" @error="imageErrorHandler" />
           <div class="min-w-0">
             <p class="line-clamp-1 text-sm font-bold text-gray-900 dark:text-white">{{ (row as any).title }}</p>
             <p class="text-xs text-gray-400">{{ (row as any).author.name }}</p>
@@ -188,7 +192,7 @@ function confirmBulkDelete() {
       <template #cell-actions="{ row }">
         <div class="flex items-center justify-end gap-1">
           <router-link
-            :to="`/admin/articles/${(row as any).id}/edit`"
+            :to="p(`/articles/${(row as any).id}/edit`)"
             class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/40"
             title="Edit"
           >
@@ -215,7 +219,7 @@ function confirmBulkDelete() {
                 <MoreHorizontal class="h-4 w-4" />
               </span>
             </template>
-            <router-link :to="`/admin/articles/${(row as any).id}/edit`" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
+            <router-link :to="p(`/articles/${(row as any).id}/edit`)" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
               <Pencil class="h-3.5 w-3.5" /> Edit
             </router-link>
             <a :href="`/article/${(row as any).id}`" target="_blank" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">

@@ -21,12 +21,17 @@ import { useToast } from '@/composables/useToast'
 import { timeAgo } from '@/services/format'
 import { useClickOutside } from '@/composables/useClickOutside'
 import { LANGUAGES } from '@/services/i18n'
+import { imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
+import { useDashboardBase } from '@/composables/useDashboardBase'
 import type { LanguageCode } from '@/types'
 
 const app = useAppStore()
 const notif = useNotificationsStore()
 const auth = useAuthStore()
 const route = useRoute()
+const { base } = useDashboardBase()
+const roleKey = computed(() => (auth.user?.role ?? '').toLowerCase())
+const showSettings = computed(() => roleKey.value === 'admin' || roleKey.value === 'editor')
 const router = useRouter()
 const toast = useToast()
 
@@ -158,7 +163,7 @@ function logout() {
           <Bell class="h-5 w-5" />
           <span
             v-if="notif.unreadCount > 0"
-            class="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+            class="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
           >
             {{ notif.unreadCount }}
           </span>
@@ -200,7 +205,7 @@ function logout() {
             </div>
             <div class="border-t border-gray-100 p-2 dark:border-gray-700">
               <router-link
-                to="/admin/notifications"
+                :to="`${base}/notifications`"
                 class="block rounded-lg py-2 text-center text-sm font-bold text-primary-600 transition-colors hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/30"
                 @click="notifOpen = false"
               >
@@ -216,7 +221,7 @@ function logout() {
           class="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
           @click="userOpen = !userOpen"
         >
-          <img v-if="auth.user" :src="auth.user.avatar" alt="avatar" class="h-9 w-9 rounded-full ring-2 ring-primary-500/60" />
+          <img v-if="auth.user" :src="auth.user.avatar || PLACEHOLDER_IMAGE" alt="avatar" class="h-9 w-9 rounded-full ring-2 ring-primary-500/60" @error="imageErrorHandler" />
           <div v-else class="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">
             G
           </div>
@@ -239,10 +244,10 @@ function logout() {
               <router-link to="/profile" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
                 <UserIcon class="h-4 w-4 text-gray-400" /> My profile
               </router-link>
-              <router-link to="/admin" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
+              <router-link :to="base" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
                 <LayoutDashboard class="h-4 w-4 text-gray-400" /> Dashboard
               </router-link>
-              <router-link to="/admin/settings" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
+              <router-link v-if="showSettings" :to="`${base}/settings`" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700">
                 <Settings class="h-4 w-4 text-gray-400" /> Settings
               </router-link>
             </div>

@@ -37,6 +37,7 @@ export interface Comment {
   status: 'visible' | 'pending' | 'hidden' | 'reported'
   likes: number
   parentId?: string | null
+  userRole?: string
 }
 
 export interface MediaItem {
@@ -146,22 +147,23 @@ export interface BackendPost {
   title: string
   slug: string
   body: string
-  excerpt: string
-  status: BackendPostStatus
-  type: string
+  excerpt: string | null
+  status: string
   category_id: number | null
-  user_id?: number
+  type: string
+  category: string
+  author: string
+  author_thumbnail: string | null
   thumbnail: string | null
+  tags: string[]
   views: number
+  comment_count: number
   created_at: string
-  updated_at: string
-  category?: string | null
-  author?: string | null
+  updated_at: string | null
+  // Extra fields the backend may include / the app uses:
+  user_id?: number
   author_name?: string | null
-  author_thumbnail?: string | null
   category_name?: string | null
-  comment_count?: number | null
-  tags?: string[]
   scope?: string | null
   province?: string | null
   country?: string | null
@@ -179,11 +181,13 @@ export interface BackendCategory {
 export interface BackendUser {
   id: number
   name: string
+  username: string
   email: string
   role: string
   thumbnail: string | null
   created_at: string
-  updated_at?: string
+  updated_at?: string | null
+  bio?: string | null
 }
 
 export interface BackendCommentReply {
@@ -203,6 +207,7 @@ export interface BackendComment {
   user_id?: number
   author?: string | null
   avatar?: string | null
+  user_role?: string | null
   post_id?: number
   post_title?: string | null
   parent_id?: number | null

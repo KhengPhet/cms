@@ -55,6 +55,14 @@ function extractErrorMessage(_status: number, payload: unknown, fallback: string
   return fallback
 }
 
+function extractErrorCode(payload: unknown): string | undefined {
+  if (isPlainObject(payload)) {
+    const c = (payload as Record<string, unknown>).code
+    if (typeof c === 'string' && c) return c
+  }
+  return undefined
+}
+
 export async function request<T = unknown>(path: string, options: FetchOptions = {}): Promise<T> {
   const { method = 'GET', headers = {}, body, auth = true } = options
   const base = getApiBaseUrl()
@@ -66,6 +74,8 @@ export async function request<T = unknown>(path: string, options: FetchOptions =
   const isFormData = body instanceof FormData
   if (body !== undefined && body !== null) {
     if (isFormData) {
+      // Let the browser generate the multipart boundary. Do NOT set
+      // Content-Type: multipart/form-data manually.
       payload = body
     } else {
       finalHeaders['Content-Type'] = 'application/json'
@@ -103,7 +113,8 @@ export async function request<T = unknown>(path: string, options: FetchOptions =
     const fallback = `Request failed (${res.status})`
     throw new ApiError({
       status: res.status,
-      message: extractErrorMessage(res.status, data, fallback)
+      message: extractErrorMessage(res.status, data, fallback),
+      code: extractErrorCode(data)
     })
   }
 
@@ -133,27 +144,17 @@ export function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-type ImageValue = string | null | undefined
-
-export function getImageUrl(value: ImageValue): string {
-  if (!value) return ''
-  if (/^https?:\/\//.test(value) || value.startsWith('data:')) return value
-  const base = getApiBaseUrl()
-  if (value.startsWith('/uploads/')) return `${base}${value}`
-  return `${base}/uploads/${value}`
-}
-
-export function getAuthorImageUrl(value: ImageValue): string {
-  if (!value) return ''
-  if (/^https?:\/\//.test(value) || value.startsWith('data:')) return value
-  const base = getApiBaseUrl()
-  if (value.startsWith('/uploads/')) return `${base}${value}`
-  return `${base}/uploads/${value}`
-}
-
 export function handleUnauthorized(status: number): void {
   if (status === 401) {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem('gcms_user')
   }
 }
+
+// Image URL helpers live in src/utils/getImageUrl.ts
+export {
+  getImageUrl,
+  getAuthorImageUrl,
+  imageErrorHandler,
+  handleImageError
+} from '@/utils/getImageUrl'

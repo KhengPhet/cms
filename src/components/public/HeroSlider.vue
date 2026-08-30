@@ -41,7 +41,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="articles.length" class="relative slider-fade" :key="lang">
-    <div class="overflow-hidden rounded-3xl">
+    <div class="overflow-hidden rounded-xl sm:rounded-3xl">
       <div
         class="flex transition-transform duration-700 ease-out"
         :style="{ transform: `translateX(-${current * 100}%)` }"
@@ -53,24 +53,24 @@ onBeforeUnmount(() => {
     </div>
 
     <button
-      class="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-card backdrop-blur transition-all hover:scale-110 hover:bg-white"
+      class="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-card backdrop-blur transition-all hover:scale-110 hover:bg-white sm:left-3 sm:h-10 sm:w-10"
       @click="go(current - 1)"
     >
-      <ChevronLeft class="h-5 w-5" />
+      <ChevronLeft class="h-4 w-4 sm:h-5 sm:w-5" />
     </button>
     <button
-      class="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-card backdrop-blur transition-all hover:scale-110 hover:bg-white"
+      class="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-card backdrop-blur transition-all hover:scale-110 hover:bg-white sm:right-3 sm:h-10 sm:w-10"
       @click="go(current + 1)"
     >
-      <ChevronRight class="h-5 w-5" />
+      <ChevronRight class="h-4 w-4 sm:h-5 sm:w-5" />
     </button>
 
-    <div class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+    <div class="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 sm:bottom-4">
       <button
         v-for="(a, i) in articles"
         :key="a.id"
         class="rounded-full transition-all duration-300"
-        :class="i === current ? 'h-2 w-7 bg-white' : 'h-2 w-2 bg-white/50 hover:bg-white/80'"
+        :class="i === current ? 'h-2 w-6 bg-white sm:w-7' : 'h-2 w-2 bg-white/50 hover:bg-white/80'"
         aria-label="slide"
         @click="go(i)"
       />

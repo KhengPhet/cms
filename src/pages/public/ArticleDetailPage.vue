@@ -20,6 +20,7 @@ import ArticleCard from '@/components/public/ArticleCard.vue'
 import SectionHeader from '@/components/public/SectionHeader.vue'
 import CommentSection from '@/components/public/CommentSection.vue'
 import SocialIcon from '@/components/public/SocialIcon.vue'
+import { getImageUrl, imageErrorHandler, PLACEHOLDER_IMAGE } from '@/utils/getImageUrl'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,6 +37,11 @@ const related = computed(() => {
   return store.published
     .filter((a) => a.categoryId === article.value!.categoryId && a.id !== article.value!.id)
     .slice(0, 3)
+})
+
+const categorySlug = computed(() => {
+  const cat = store.categories.find((c) => c.id === article.value?.categoryId)
+  return cat?.slug ?? ''
 })
 
 onMounted(() => {
@@ -65,10 +71,10 @@ async function copyLink() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8">
+  <div class="page-container py-8">
     <button
       class="mb-6 flex items-center gap-2 text-sm font-semibold text-gray-500 transition-colors hover:text-primary-600 dark:text-gray-400"
-      @click="router.push(article ? `/category/${article.scope}` : '/')"
+      @click="router.push(article ? `/${article.scope}` : '/')"
     >
       <ArrowLeft class="h-4 w-4" /> {{ t('common.backToHome') }}
     </button>
@@ -76,7 +82,7 @@ async function copyLink() {
     <article v-if="article" class="mx-auto max-w-4xl">
       <div class="mb-4 flex flex-wrap items-center gap-2">
         <router-link
-          :to="`/category/${article.categoryId}`"
+          :to="`/category/${categorySlug}`"
           class="rounded-full bg-primary-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-700 dark:bg-primary-900/40 dark:text-primary-300"
         >
           {{ article.category }}
@@ -99,7 +105,7 @@ async function copyLink() {
 
       <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-gray-100 py-4 dark:border-gray-700">
         <div class="flex items-center gap-3">
-          <img :src="article.author.avatar" :alt="article.author.name" class="h-12 w-12 rounded-full ring-2 ring-primary-500/40" />
+          <img :src="article.author.avatar || PLACEHOLDER_IMAGE" :alt="article.author.name" class="h-12 w-12 rounded-full ring-2 ring-primary-500/40" @error="imageErrorHandler" />
           <div>
             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ article.author.name }}</p>
             <p class="text-xs text-gray-400">{{ article.author.role }} · {{ article.author.bio }}</p>
@@ -113,7 +119,7 @@ async function copyLink() {
         </div>
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-2">
+      <div class="mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
         <span class="mr-1 flex items-center gap-1.5 text-sm font-bold text-gray-700 dark:text-gray-300">
           <Share2 class="h-4 w-4" /> {{ t('common.share') }}:
         </span>
@@ -130,7 +136,7 @@ async function copyLink() {
           <SocialIcon name="youtube" :size="15" />
         </button>
         <button
-          class="ml-2 flex h-9 items-center gap-1.5 rounded-full border border-gray-200 px-3 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+          class="ml-auto flex h-9 items-center gap-1.5 rounded-full border border-gray-200 px-3 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           @click="copyLink"
         >
           <Check v-if="copied" class="h-3.5 w-3.5 text-emerald-500" />
@@ -138,9 +144,9 @@ async function copyLink() {
           {{ copied ? 'Copied!' : 'Copy link' }}
         </button>
         <button
-          class="ml-auto flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors"
-          :class="saved ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'"
+          class="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 px-3 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           @click="saveArticle"
+          :class="saved ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-600 dark:bg-amber-900/30 dark:text-amber-300' : ''"
         >
           <Bookmark :class="['h-4 w-4', saved ? 'fill-current' : '']" /> {{ saved ? 'Saved' : 'Save' }}
         </button>
@@ -152,8 +158,8 @@ async function copyLink() {
         </button>
       </div>
 
-      <figure class="mt-6 overflow-hidden rounded-2xl">
-        <img :src="article.thumbnail" :alt="article.title" class="w-full object-cover" />
+      <figure class="card-surface mt-6 overflow-hidden p-0">
+        <img :src="getImageUrl(article.thumbnail)" :alt="article.title" class="aspect-[16/9] w-full object-cover sm:aspect-[2/1]" @error="imageErrorHandler" />
       </figure>
 
       <div class="prose-article mt-8" v-html="article.content" />

@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Save, Send, ArrowLeft, Image as ImageIcon, X } from '@lucide/vue'
+import { Save, Send, ArrowLeft, X, UploadCloud } from '@lucide/vue'
 import { useArticlesStore } from '@/stores/articles'
-import { useMediaStore } from '@/stores/media'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useToast } from '@/composables/useToast'
 import { countries, provinces } from '@/services/data'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import { slugify, readingTime } from '@/services/format'
 import { gradientImage, avatarImage } from '@/services/placeholder'
+import { getImageUrl, imageErrorHandler } from '@/utils/getImageUrl'
+import { useDashboardBase } from '@/composables/useDashboardBase'
 import type { Article, ArticleStatus } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const store = useArticlesStore()
-const mediaStore = useMediaStore()
 const notifStore = useNotificationsStore()
 const toast = useToast()
+const { base } = useDashboardBase()
 
 const isEdit = computed(() => !!route.params.id)
 const original = computed(() => (isEdit.value ? store.byId(String(route.params.id)) : null))
@@ -43,8 +43,10 @@ const form = reactive({
 
 const tagInput = ref('')
 const thumb = ref('')
-const thumbOpen = ref(false)
 const autoTitle = ref(true)
+const thumbFileInput = ref<HTMLInputElement | null>(null)
+const dragOver = ref(false)
+const uploading = ref(false)
 
 if (original.value) {
   const a = original.value
@@ -79,8 +81,6 @@ const provinceOptions = computed(() => [
 ])
 const catOptions = computed(() => store.categories.map((c) => ({ label: c.name, value: c.id })))
 
-const gradientOptions = Array.from({ length: 12 }, (_, i) => gradientImage(i, 'Thumbnail ' + (i + 1)))
-
 function onTitle() {
   if (autoTitle.value) form.slug = slugify(form.title) || 'article'
 }
@@ -93,6 +93,41 @@ function addTag() {
 
 function removeTag(i: number) {
   form.tags.splice(i, 1)
+}
+
+function onFilePicked(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) uploadThumb(file)
+  if (thumbFileInput.value) thumbFileInput.value.value = ''
+}
+
+function onDrop(event: DragEvent) {
+  dragOver.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (file) uploadThumb(file)
+}
+
+function uploadThumb(file: File) {
+  if (!file.type.startsWith('image/')) {
+    toast.error('Please drop or upload an image file')
+    return
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    toast.error('Image must be 10 MB or smaller')
+    return
+  }
+  uploading.value = true
+  const reader = new FileReader()
+  reader.onload = () => {
+    thumb.value = String(reader.result || '')
+    uploading.value = false
+    toast.success('Image ready — save the article to upload it')
+  }
+  reader.onerror = () => {
+    uploading.value = false
+    toast.error('Failed to read the image')
+  }
+  reader.readAsDataURL(file)
 }
 
 function updateStatus(status: ArticleStatus) {
@@ -150,7 +185,7 @@ async function save(status?: ArticleStatus) {
       ip: '203.0.113.10',
       date: new Date().toISOString()
     })
-    router.push('/admin/articles')
+    router.push(`${base.value}/articles`)
   } catch (err) {
     toast.error(err instanceof Error ? err.message : 'Failed to save article')
   }
@@ -190,7 +225,7 @@ onMounted(() => {
 
     <div class="grid gap-5 lg:grid-cols-3">
       <div class="space-y-5 lg:col-span-2">
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface p-5">
           <BaseInput
             v-model="form.title"
             label="Title"
@@ -211,7 +246,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface p-5">
           <div class="mb-3 flex items-center justify-between">
             <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Tags <span class="text-xs text-gray-400">(press Enter to add)</span>
@@ -241,36 +276,55 @@ onMounted(() => {
       </div>
 
       <div class="space-y-5">
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface p-5">
           <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Thumbnail image *</label>
-          <button
-            class="group relative block w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600"
-            @click="thumbOpen = true"
+
+          <div
+            class="relative overflow-hidden rounded-xl border-2 border-dashed transition-colors"
+            :class="dragOver ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-600'"
+            @dragover.prevent="dragOver = true"
+            @dragenter.prevent="dragOver = true"
+            @dragleave.prevent="dragOver = false"
+            @drop.prevent="onDrop"
           >
-            <img v-if="thumb" :src="thumb" alt="" class="aspect-[16/9] w-full object-cover" />
-            <div v-else class="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 text-gray-400">
-              <ImageIcon class="h-8 w-8" />
-              <span class="text-xs font-semibold">Click to choose from media library</span>
+            <img v-if="thumb" :src="getImageUrl(thumb) || thumb" alt="" class="aspect-[16/9] w-full object-cover" @error="imageErrorHandler" />
+            <div v-else class="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 px-4 text-center text-gray-400">
+              <UploadCloud class="h-8 w-8" :class="dragOver ? 'text-primary-500' : ''" />
+              <span class="text-xs font-semibold">Drag &amp; drop an image here</span>
+              <span class="text-[11px]">or</span>
+              <div class="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-primary-700"
+                  @click="thumbFileInput?.click()"
+                >
+                  Upload image
+                </button>
+              </div>
             </div>
-            <span class="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
-              Change image
-            </span>
-          </button>
-          <p class="mt-2 text-[11px] text-gray-400">Recommended 16:9 ratio, min 1200×675.</p>
-          <div class="mt-3 grid grid-cols-4 gap-2">
-            <button
-              v-for="(g, i) in gradientOptions.slice(0, 8)"
-              :key="i"
-              class="overflow-hidden rounded-lg border-2 transition-all"
-              :class="thumb === g ? 'border-primary-500 ring-2 ring-primary-500/30' : 'border-transparent hover:border-gray-300'"
-              @click="thumb = g"
-            >
-              <img :src="g" alt="" class="aspect-video w-full object-cover" />
-            </button>
+            <div v-if="thumb" class="absolute inset-x-0 bottom-2 flex justify-center gap-2">
+              <button
+                type="button"
+                class="rounded-lg bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur transition-colors hover:bg-black/75"
+                @click="thumbFileInput?.click()"
+              >
+                Change
+              </button>
+            </div>
+            <input ref="thumbFileInput" type="file" accept="image/*" class="hidden" @change="onFilePicked" />
           </div>
+
+          <button
+            v-if="thumb"
+            type="button"
+            class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+            @click="thumb = ''"
+          >
+            Delete thumbnail
+          </button>
         </div>
 
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface p-5">
           <div class="space-y-4">
             <BaseSelect v-model="form.categoryId" :options="catOptions" label="Category" required />
             <BaseSelect v-model="form.scope" :options="scopeOptions" label="Scope" required />
@@ -286,22 +340,5 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <BaseModal :open="thumbOpen" title="Select thumbnail" max-width="max-w-2xl" @close="thumbOpen = false">
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <button
-          v-for="m in mediaStore.images"
-          :key="m.id"
-          class="group relative overflow-hidden rounded-xl border-2 transition-all"
-          :class="thumb === m.url ? 'border-primary-500 ring-2 ring-primary-500/30' : 'border-transparent hover:border-gray-300'"
-          @click="thumb = m.url; thumbOpen = false"
-        >
-          <img :src="m.url" :alt="m.name" class="aspect-[4/3] w-full object-cover" />
-          <span class="absolute inset-x-0 bottom-0 truncate bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
-            {{ m.name }}
-          </span>
-        </button>
-      </div>
-    </BaseModal>
   </div>
 </template>

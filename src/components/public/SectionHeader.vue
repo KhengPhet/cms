@@ -16,9 +16,9 @@ withDefaults(
 </script>
 
 <template>
-  <div class="mb-5 flex items-center justify-between">
+  <div class="mb-6 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <span :class="['h-7 w-1.5 rounded-full', accent ? 'bg-red-500' : 'bg-primary-600']" />
+      <span :class="['h-6 w-1.5 rounded-full', accent ? 'bg-red-500' : 'bg-primary-600']" />
       <h2 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white lg:text-2xl">
         {{ title }}
       </h2>
@@ -26,7 +26,7 @@ withDefaults(
     <router-link
       v-if="linkTo"
       :to="linkTo"
-      class="group flex items-center gap-1 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400"
+      class="group flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400"
     >
       {{ linkLabel }}
       <span class="transition-transform group-hover:translate-x-0.5">→</span>

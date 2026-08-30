@@ -26,8 +26,7 @@ const featured = computed(() => store.featured.slice(0, 4))
 const latest = computed(() => [...store.published].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()))
 const latestSix = computed(() => latest.value.slice(0, 6))
 const latestGrid = computed(() => latest.value.slice(6, 12))
-const national = computed(() => store.national.slice(0, 5))
-const nationalFeatured = computed(() => national.value[0])
+const national = computed(() => store.national.slice(0, 4))
 const international = computed(() => store.international.slice(0, 6))
 const videoNews = computed(() => store.video.slice(0, 6))
 const popular = computed(() => [...store.published].sort((a, b) => b.views - a.views).slice(0, 6))
@@ -39,12 +38,12 @@ const recommended = computed(() => {
 
 <template>
   <div>
-    <section class="mx-auto max-w-7xl px-4 pt-6">
+    <section class="page-container pt-6">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <HeroSlider :articles="featured" />
         </div>
-        <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface p-4 sm:p-5">
           <div class="mb-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
@@ -63,52 +62,39 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-10">
+    <section class="page-container py-10">
       <SectionHeader :title="t('common.latestNews')" link-to="/search" :link-label="t('common.viewAll')" />
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <ArticleCard v-for="a in latestGrid" :key="a.id" :article="a" />
       </div>
     </section>
 
-    <section class="border-y border-gray-100 bg-gray-50 py-10 dark:border-gray-700 dark:bg-gray-900/50">
-      <div class="mx-auto max-w-7xl px-4">
-        <SectionHeader :title="t('common.national')" link-to="/national" :link-label="t('common.viewAll')" accent />
-        <div class="grid gap-6 lg:grid-cols-3">
-          <div class="lg:col-span-2">
-            <div class="grid gap-5 md:grid-cols-2">
-              <ArticleCard v-if="nationalFeatured" :article="nationalFeatured" />
-              <div class="space-y-3">
-                <ArticleCard v-for="a in national.slice(1)" :key="a.id" :article="a" variant="horizontal" :show-excerpt="false" />
-              </div>
-            </div>
+    <section class="page-container py-10">
+      <div class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2">
+          <SectionHeader :title="t('common.national')" link-to="/national" :link-label="t('common.viewAll')" accent />
+          <div class="grid gap-5 sm:grid-cols-2">
+            <ArticleCard v-for="a in national" :key="a.id" :article="a" />
           </div>
-          <aside class="space-y-6">
-            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
-              <div class="mb-4 flex items-center gap-2">
-                <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
-                <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.trending') }}</h3>
-              </div>
-              <ul class="space-y-3">
-                <li v-for="(topic, i) in trendingTopics" :key="topic" class="flex items-center gap-3">
-                  <span class="text-lg font-extrabold text-gray-300 dark:text-gray-600">{{ String(i + 1).padStart(2, '0') }}</span>
-                  <a href="/search" class="text-sm font-semibold text-gray-700 transition-colors hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
-                    {{ topic }}
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
-              <h3 class="mb-4 text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.mostRead') }}</h3>
-              <div class="space-y-3">
-                <ArticleCard v-for="a in popular.slice(0, 4)" :key="a.id" :article="a" variant="compact" />
-              </div>
-            </div>
-          </aside>
+        </div>
+        <div class="card-surface h-fit p-5">
+          <div class="mb-4 flex items-center gap-2">
+            <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
+            <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.trending') }}</h3>
+          </div>
+          <ul class="space-y-3">
+            <li v-for="(topic, i) in trendingTopics" :key="topic" class="flex items-center gap-3">
+              <span class="text-lg font-extrabold text-gray-300 dark:text-gray-600">{{ String(i + 1).padStart(2, '0') }}</span>
+              <a href="/search" class="text-sm font-semibold text-gray-700 transition-colors hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
+                {{ topic }}
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-10">
+    <section class="page-container py-10">
       <SectionHeader :title="t('common.international')" link-to="/international" :link-label="t('common.viewAll')" />
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <ArticleCard v-for="a in international" :key="a.id" :article="a" />
@@ -116,7 +102,7 @@ const recommended = computed(() => {
     </section>
 
     <section v-if="videoNews.length" class="border-y border-gray-100 bg-gray-50 py-10 dark:border-gray-700 dark:bg-gray-900/50">
-      <div class="mx-auto max-w-7xl px-4">
+      <div class="page-container">
         <SectionHeader :title="t('home.videoNews')" :link-label="t('common.viewAll')" />
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <ArticleCard v-for="a in videoNews" :key="a.id" :article="a" />
@@ -124,7 +110,7 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-10">
+    <section class="page-container py-10">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">
           <SectionHeader :title="t('common.recommended')" />
@@ -132,7 +118,7 @@ const recommended = computed(() => {
             <ArticleCard v-for="a in recommended" :key="a.id" :article="a" />
           </div>
         </div>
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface h-fit p-5">
           <div class="mb-4 flex items-center gap-2">
             <Newspaper class="h-4 w-4 text-primary-600 dark:text-primary-400" />
             <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.editorsPick') }}</h3>
@@ -144,7 +130,7 @@ const recommended = computed(() => {
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 pb-14">
+    <section class="page-container pb-14">
       <NewsletterSection />
     </section>
   </div>

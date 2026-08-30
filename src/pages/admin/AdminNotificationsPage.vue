@@ -59,7 +59,7 @@ function clearAll() {
       </div>
     </div>
 
-    <div class="rounded-2xl border border-gray-100 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
+    <div class="card-surface p-3">
       <BaseTabs v-model="tab" :items="tabs" />
     </div>
 

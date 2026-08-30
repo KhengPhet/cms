@@ -176,13 +176,28 @@ function toBackendStatus(status: ArticleStatus): string {
   return 'Draft'
 }
 
-function dataUrlToFile(dataUrl: string): File | null {
-  const m = dataUrl.match(/^data:([^;]+);base64,(.*)$/s)
-  if (!m) return null
-  const mime = m[1]
-  const binary = atob(m[2])
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  const ext = mime.split('/')[1]?.replace('+xml', '') || 'png'
-  return new File([bytes], `post-${Date.now()}.${ext}`, { type: mime })
+function dataUrlToFile(dataUrl: string, fallbackName = 'post'): File | null {
+  try {
+    if (!dataUrl || !dataUrl.startsWith('data:')) return null
+    const rest = dataUrl.slice(5)
+    const comma = rest.indexOf(',')
+    if (comma === -1) return null
+    const meta = rest.slice(0, comma)
+    const payload = rest.slice(comma + 1)
+    if (!payload) return null
+
+    const mime = meta.split(';')[0] || 'image/png'
+    const isBase64 = meta.split(';').includes('base64')
+
+    let ext = (mime.split('/')[1] ?? 'png').split('+')[0].toLowerCase()
+    if (!/^[a-z0-9]{1,6}$/.test(ext)) ext = 'png'
+
+    const bytes = isBase64
+      ? Uint8Array.from(atob(payload), (c) => c.charCodeAt(0))
+      : new TextEncoder().encode(decodeURIComponent(payload))
+
+    return new File([bytes], `${fallbackName}-${Date.now()}.${ext}`, { type: mime })
+  } catch {
+    return null
+  }
 }

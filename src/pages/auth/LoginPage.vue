@@ -8,16 +8,17 @@ import InputField from '@/components/auth/InputField.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue'
 import Button from '@/components/auth/Button.vue'
 import SocialIcon from '@/components/public/SocialIcon.vue'
+import { dashboardPathForRole } from '@/utils/roles'
 
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-const form = reactive({ identifier: '', password: '' })
+const form = reactive({ email: '', password: '' })
 const remember = ref(true)
 const formError = ref('')
 
-const errors = reactive<{ identifier: string; password: string }>({ identifier: '', password: '' })
+const errors = reactive<{ email: string; password: string }>({ email: '', password: '' })
 
 const socials: { id: 'google' | 'facebook' | 'telegram'; label: string }[] = [
   { id: 'google', label: 'Google' },
@@ -27,35 +28,35 @@ const socials: { id: 'google' | 'facebook' | 'telegram'; label: string }[] = [
 
 function validate(): boolean {
   formError.value = ''
-  errors.identifier = !form.identifier.trim() ? 'Please enter your username or email.' : ''
+  errors.email = /^\S+@\S+\.\S+$/.test(form.email.trim()) ? '' : 'Please enter a valid email address.'
   errors.password = !form.password ? 'Please enter your password.' : ''
-  return !errors.identifier && !errors.password
+  return !errors.email && !errors.password
 }
 
 async function submit() {
   if (!validate()) return
   try {
-    await auth.login(form.identifier, form.password)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/admin/dashboard'
-    router.push(redirect)
+    await auth.login(form.email, form.password)
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : null
+    if (redirect) {
+      router.push(redirect)
+    } else {
+      router.push(dashboardPathForRole(auth.user?.role))
+    }
   } catch (e) {
     if (e instanceof AuthError) formError.value = e.message
     else formError.value = 'Unable to sign in. Please try again.'
   }
 }
 
-function socialLogin(id: string) {
-  const names: Record<string, string> = {
-    google: 'Google User',
-    facebook: 'Facebook User',
-    telegram: 'Telegram User'
-  }
-  form.identifier = names[id].toLowerCase().replace(' ', '') + '@demo.com'
-  form.password = 'demopass'
-  submit()
+function socialLogin(_id: string) {
+  // Social login is not wired to a backend provider locally. We must NOT
+  // fabricate a fake user/token here — authentication can only come from the
+  // Express API backed by PostgreSQL. Show a clear message instead.
+  formError.value = 'Social login is not available. Please sign in with your email and password.'
 }
 
-const canSubmit = computed(() => !form.identifier || !form.password)</script>
+const canSubmit = computed(() => !form.email || !form.password)</script>
 
 <template>
   <div class="space-y-5">
@@ -69,11 +70,13 @@ const canSubmit = computed(() => !form.identifier || !form.password)</script>
 
     <form class="space-y-4" novalidate @submit.prevent="submit">
       <InputField
-        v-model="form.identifier"
-        label="Email or Username"
-        placeholder="Enter your username or email"
-        :error="errors.identifier"
+        v-model="form.email"
+        label="Email"
+        type="email"
+        placeholder="you@example.com"
+        :error="errors.email"
         required
+        autocomplete="email"
       />
 
       <PasswordInput

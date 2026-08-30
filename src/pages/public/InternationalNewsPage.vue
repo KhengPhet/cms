@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useArticlesStore } from '@/stores/articles'
+import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from '@/composables/useI18n'
 import ArticleCard from '@/components/public/ArticleCard.vue'
 import SectionHeader from '@/components/public/SectionHeader.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
 import { TrendingUp, Globe2 } from '@lucide/vue'
+import { getImageUrl, imageErrorHandler } from '@/utils/getImageUrl'
 
 const store = useArticlesStore()
+const settings = useSettingsStore()
 const { t } = useI18n()
 
 const country = ref('')
@@ -58,13 +61,13 @@ watch(country, () => (page.value = 1))
   <div>
     <div class="bg-gradient-to-r from-sky-700 via-primary-700 to-indigo-700 py-10 text-white">
       <div class="mx-auto max-w-7xl px-4">
-        <p class="text-xs font-bold uppercase tracking-widest text-sky-200">Global CMS / International</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-sky-200">{{ settings.appName }} / International</p>
         <h1 class="mt-1 text-3xl font-extrabold lg:text-4xl">{{ t('nav.international') }} News</h1>
         <p class="mt-2 max-w-2xl text-sm text-sky-100">Breaking world news and analysis from the USA, Europe, Asia and beyond.</p>
       </div>
     </div>
 
-    <section class="mx-auto max-w-7xl px-4 py-8">
+    <section class="page-container py-8">
       <div class="mb-6 flex items-center gap-2 overflow-x-auto pb-2">
         <button
           class="flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-all"
@@ -109,7 +112,7 @@ watch(country, () => (page.value = 1))
         </div>
 
         <aside class="space-y-6">
-          <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-5">
             <div class="mb-4 flex items-center gap-2">
               <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">International trending</h3>
@@ -126,14 +129,14 @@ watch(country, () => (page.value = 1))
             </ul>
           </div>
 
-          <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-5">
             <SectionHeader :title="t('common.related')" />
             <div class="space-y-3">
               <p v-if="!paged.length" class="text-sm text-gray-400">Select a region to see related reads.</p>
               <template v-for="a in paged.slice(0, 4)" v-else>
                 <router-link :to="`/article/${a.id}`" class="group block rounded-xl p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <div class="flex items-center gap-3">
-                    <img :src="a.thumbnail" :alt="a.title" class="h-12 w-16 shrink-0 rounded-lg object-cover" />
+                    <img :src="getImageUrl(a.thumbnail)" :alt="a.title" class="h-12 w-16 shrink-0 rounded-lg object-cover" @error="imageErrorHandler" />
                     <div>
                       <p class="line-clamp-2 text-[13px] font-semibold leading-snug text-gray-800 group-hover:text-primary-600 dark:text-gray-200">
                         {{ a.title }}

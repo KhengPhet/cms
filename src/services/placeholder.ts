@@ -16,7 +16,7 @@ const PALETTES: [string, string, string][] = [
 export function gradientImage(index: number, label?: string): string {
   const palette = PALETTES[index % PALETTES.length]
   const id = `g${index}`
-  const title = label ?? 'Global CMS'
+  const title = label ?? 'P CMS'
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
   <defs>

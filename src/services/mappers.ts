@@ -9,8 +9,9 @@ import type {
   Category,
   Comment
 } from '@/types'
-import { getAuthorImageUrl, getImageUrl } from '@/services/api'
+import { getAuthorImageUrl, getImageUrl } from '@/utils/getImageUrl'
 import { readingTime } from '@/services/format'
+import { gradientImage } from '@/services/placeholder'
 
 const CATEGORY_COLORS: Record<string, string> = {
   National: '#4f46e5',
@@ -62,7 +63,7 @@ export function mapAuthorFromPost(post: BackendPost): Author {
   }
 }
 
-export function mapPostToArticle(post: BackendPost): Article {
+export function mapPostToArticle(post: BackendPost, index = 0): Article {
   const content = post.body ?? ''
   const categoryId = post.category_id != null ? String(post.category_id) : 'uncategorized'
   const category = post.category ?? post.category_name ?? 'Uncategorized'
@@ -74,7 +75,8 @@ export function mapPostToArticle(post: BackendPost): Article {
     slug: post.slug,
     excerpt: post.excerpt ?? '',
     content,
-    thumbnail: getImageUrl(post.thumbnail),
+    // One consistent helper. Falls back to a placeholder when the API has no image.
+    thumbnail: getImageUrl(post.thumbnail) || gradientImage(index, post.title),
     category,
     categoryId,
     scope: inferScope(post),
@@ -131,7 +133,8 @@ export function mapComment(c: BackendComment): Comment {
     date: c.created_at,
     status: normalizeCommentStatus(c.status),
     likes: 0,
-    parentId: c.parent_id != null ? String(c.parent_id) : null
+    parentId: c.parent_id != null ? String(c.parent_id) : null,
+    userRole: c.user_role ?? ''
   }
 }
 
@@ -143,3 +146,5 @@ function normalizeCommentStatus(status?: string): Comment['status'] {
 }
 
 export const colorForCategory = (name: string): string => CATEGORY_COLORS[name] ?? '#4f46e5'
+
+

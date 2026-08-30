@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useArticlesStore } from '@/stores/articles'
+import { useSettingsStore } from '@/stores/settings'
 import ArticleCard from '@/components/public/ArticleCard.vue'
 import SectionHeader from '@/components/public/SectionHeader.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
@@ -9,6 +10,7 @@ import { TrendingUp } from '@lucide/vue'
 
 const route = useRoute()
 const store = useArticlesStore()
+const settings = useSettingsStore()
 
 const category = computed(() => store.categories.find((c) => c.slug === route.params.slug))
 const page = ref(1)
@@ -37,13 +39,13 @@ watch(
   <div>
     <div class="bg-gradient-to-r from-gray-800 to-gray-700 py-10 text-white dark:from-gray-800 dark:to-gray-900">
       <div class="mx-auto max-w-7xl px-4">
-        <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Global CMS / {{ category?.name ?? 'Category' }}</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-400">{{ settings.appName }} / {{ category?.name ?? 'Category' }}</p>
         <h1 class="mt-1 text-3xl font-extrabold lg:text-4xl">{{ category?.name ?? 'Category' }}</h1>
         <p class="mt-2 max-w-2xl text-sm text-gray-300">{{ category?.description }}</p>
       </div>
     </div>
 
-    <section class="mx-auto max-w-7xl px-4 py-8">
+    <section class="page-container py-8">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
           <ArticleCard v-if="current" :article="current" variant="overlay" />
@@ -61,7 +63,7 @@ watch(
         </div>
 
         <aside class="space-y-6">
-          <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-5">
             <div class="mb-4 flex items-center gap-2">
               <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">Top in category</h3>

@@ -3,8 +3,13 @@ import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminTopbar from '@/components/admin/AdminTopbar.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
+import { useSettingsStore } from '@/stores/settings'
+import { dashboardLabelForRole } from '@/utils/roles'
 
 const app = useAppStore()
+const auth = useAuthStore()
+const settings = useSettingsStore()
 </script>
 
 <template>
@@ -25,7 +30,7 @@ const app = useAppStore()
         </router-view>
       </main>
       <footer class="px-6 py-4 text-center text-xs text-gray-400">
-        © {{ new Date().getFullYear() }} Global CMS Platform — Admin Panel
+        © {{ new Date().getFullYear() }} {{ settings.appName }} — {{ dashboardLabelForRole(auth.user?.role) }}
       </footer>
     </div>
     <ToastContainer />

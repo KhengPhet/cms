@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Check, Trash2, Flag, Eye, Search } from '@lucide/vue'
+import { Check, Trash2, Flag, Eye, Search, X } from '@lucide/vue'
 import { useCommentsStore } from '@/stores/comments'
 import { useToast } from '@/composables/useToast'
 import BaseTable from '@/components/ui/BaseTable.vue'
@@ -56,6 +56,14 @@ function onTab(v: string) {
   page.value = 1
 }
 
+function roleColor(role: string): string {
+  const r = (role || '').toLowerCase()
+  if (r === 'admin') return 'bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-300'
+  if (r === 'author') return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300'
+  if (r === 'editor') return 'bg-sky-50 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300'
+  return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300'
+}
+
 async function approve(c: { id: string }) {
   await store.setStatus(c.id, 'visible')
   toast.success('Comment approved and published')
@@ -82,14 +90,27 @@ async function commitDelete() {
 
 <template>
   <div class="space-y-5">
-    <div class="grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 md:grid-cols-2 dark:border-gray-700 dark:bg-gray-800">
-      <div class="relative">
-        <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-        <input
-          v-model="query"
-          placeholder="Search comments, authors, articles…"
-          class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-        />
+    <div class="card-surface grid gap-3 p-4 md:grid-cols-2">
+      <div>
+        <div class="group relative flex items-center">
+          <Search class="pointer-events-none absolute left-3.5 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-primary-500" />
+          <input
+            v-model="query"
+            type="search"
+            placeholder="Search comments, authors, articles…"
+            class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            @input="page = 1"
+          />
+          <button
+            v-if="query"
+            type="button"
+            class="absolute right-2.5 flex h-6 w-6 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+            title="Clear search"
+            @click="query = ''; page = 1"
+          >
+            <X class="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <BaseTabs v-model="tab" :items="tabs" @update:model-value="onTab" />
     </div>
@@ -105,6 +126,12 @@ async function commitDelete() {
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm font-bold text-gray-900 dark:text-white">{{ (row as any).author }}</span>
+              <span
+                v-if="(row as any).userRole"
+                :class="['rounded-full px-2 py-0.5 text-[10px] font-bold capitalize', roleColor((row as any).userRole)]"
+              >
+                {{ (row as any).userRole }}
+              </span>
               <span v-if="(row as any).status === 'reported'" class="flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase text-red-600 dark:bg-red-900/30 dark:text-red-400">
                 <Flag class="h-3 w-3" /> Reported
               </span>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useArticlesStore } from '@/stores/articles'
+import { useSettingsStore } from '@/stores/settings'
 import { useI18n } from '@/composables/useI18n'
 import ArticleCard from '@/components/public/ArticleCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -10,6 +11,7 @@ import { Search, MapPin, TrendingUp, ChevronDown } from '@lucide/vue'
 import { useRoute } from 'vue-router'
 
 const store = useArticlesStore()
+const settings = useSettingsStore()
 const { t } = useI18n()
 const route = useRoute()
 
@@ -85,18 +87,18 @@ const catOptions = computed(() => [
   <div>
     <div class="bg-gradient-to-r from-primary-700 to-indigo-700 py-10 text-white">
       <div class="mx-auto max-w-7xl px-4">
-        <p class="text-xs font-bold uppercase tracking-widest text-indigo-200">Global CMS / National</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-indigo-200">{{ settings.appName }} / National</p>
         <h1 class="mt-1 text-3xl font-extrabold lg:text-4xl">{{ t('nav.national') }} News</h1>
         <p class="mt-2 max-w-2xl text-sm text-indigo-100">Authoritative coverage from every province — politics, economy, sports and culture.</p>
       </div>
     </div>
 
-    <section class="mx-auto max-w-7xl px-4 py-8">
+    <section class="page-container py-8">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
           <ArticleCard v-if="featured" :article="featured" variant="overlay" :show-excerpt="false" />
 
-          <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-4">
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div class="sm:col-span-2">
                 <BaseInput
@@ -126,7 +128,7 @@ const catOptions = computed(() => [
         </div>
 
         <aside class="space-y-6">
-          <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-5">
             <div class="mb-4 flex items-center gap-2">
               <MapPin class="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">Provinces</h3>
@@ -135,13 +137,13 @@ const catOptions = computed(() => [
               <li v-for="p in provinces" :key="p">
                 <a href="#" class="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-primary-900/30">
                   <span>{{ p }}</span>
-                  <ChevronDown class="h-3.5 w-3.5 rotate--90 text-gray-300" />
+                  <ChevronDown class="h-3.5 w-3.5 -rotate-90 text-gray-300" />
                 </a>
               </li>
             </ul>
           </div>
 
-          <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+          <div class="card-surface p-5">
             <div class="mb-4 flex items-center gap-2">
               <TrendingUp class="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 class="text-sm font-extrabold uppercase tracking-wide text-gray-900 dark:text-white">{{ t('common.trending') }}</h3>

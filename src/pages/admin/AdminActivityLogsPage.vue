@@ -76,7 +76,7 @@ const columns = [
       </div>
     </div>
 
-    <div class="grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 md:grid-cols-2 dark:border-gray-700 dark:bg-gray-800">
+    <div class="card-surface grid gap-3 p-4 md:grid-cols-2">
       <div class="relative">
         <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <input

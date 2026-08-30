@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import AlertMessage from '@/components/auth/AlertMessage.vue'
 import AvatarUpload from '@/components/auth/AvatarUpload.vue'
+import Button from '@/components/auth/Button.vue'
 import InputField from '@/components/auth/InputField.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue' 
 import { AuthError } from '@/services/authApi'
 import { useAuthStore } from '@/stores/auth'
-import type { UserRole } from '@/types'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { dashboardPathForRole } from '@/utils/roles'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -18,7 +19,6 @@ const form = reactive({
   email: '',
   password: '',
   confirm: '',
-  role: 'User' as UserRole,
   avatar: ''
 })
 const terms = ref(false)
@@ -31,11 +31,6 @@ const errors = reactive<Record<string, string>>({
   password: '',
   confirm: ''
 })
-
-const roleOptions: { label: string; value: UserRole }[] = [
-  { label: 'User', value: 'User' },
-  { label: 'Author', value: 'Author' }
-]
 
 const passwordChecks = computed(() => {
   const v = form.password
@@ -80,14 +75,17 @@ async function submit() {
     const thumbnail = await dataUrlToFile(form.avatar)
     await auth.register({
       name: form.fullName,
+      username: form.username,
       email: form.email,
       password: form.password,
+      role: 'user',
       thumbnail: thumbnail ?? undefined
     })
-    router.push('/admin/dashboard')
+    router.push(dashboardPathForRole(auth.user?.role))
   } catch (e) {
     if (e instanceof AuthError) {
       if (e.code === 'EMAIL_TAKEN') errors.email = e.message
+      else if (e.code === 'USERNAME_TAKEN') errors.username = e.message
       else formError.value = e.message
     } else {
       formError.value = 'Registration failed. Please try again.'
@@ -99,7 +97,12 @@ function dataUrlToFile(dataUrl: string): Promise<File | null> {
   if (!dataUrl || !dataUrl.startsWith('data:')) return Promise.resolve(null)
   return fetch(dataUrl)
     .then((r) => r.blob())
-    .then((blob) => new File([blob], 'avatar.png', { type: blob.type }))
+    .then((blob) => {
+      const mime = blob.type || 'image/png'
+      let ext = (mime.split('/')[1] ?? 'png').split('+')[0].toLowerCase()
+      if (!/^[a-z0-9]{1,6}$/.test(ext)) ext = 'png'
+      return new File([blob], `avatar.${ext}`, { type: mime })
+    })
     .catch(() => null)
 }
 </script>
@@ -170,28 +173,6 @@ function dataUrlToFile(dataUrl: string): Promise<File | null> {
         :error="errors.confirm"
         required
       />
-
-      <div>
-        <label class="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Role
-        </label>
-        <div class="grid grid-cols-2 gap-2">
-          <button
-            v-for="r in roleOptions"
-            :key="r.value"
-            type="button"
-            class="rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all"
-            :class="
-              form.role === r.value
-                ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-            "
-            @click="form.role = r.value"
-          >
-            {{ r.label }}
-          </button>
-        </div>
-      </div>
 
       <label class="flex cursor-pointer items-start gap-2.5 text-sm text-gray-600 dark:text-gray-300">
         <input

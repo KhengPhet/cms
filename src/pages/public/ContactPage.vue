@@ -5,7 +5,7 @@ import { useToast } from '@/composables/useToast'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import { gradientImage } from '@/services/placeholder'
 
-const mapImage = gradientImage(5, 'Global CMS HQ')
+const mapImage = gradientImage(5, 'P CMS HQ')
 
 const toast = useToast()
 const form = reactive({ name: '', email: '', subject: '', message: '' })
@@ -24,7 +24,7 @@ function submit() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-10">
+  <div class="page-container py-10">
     <div class="mx-auto max-w-2xl text-center">
       <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white lg:text-4xl">Contact us</h1>
       <p class="mt-3 text-gray-500 dark:text-gray-400">
@@ -34,7 +34,7 @@ function submit() {
 
     <div class="mt-10 grid gap-6 lg:grid-cols-5">
       <div class="space-y-4 lg:col-span-2">
-        <div class="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface flex gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400">
             <MapPin class="h-5 w-5" />
           </span>
@@ -43,7 +43,7 @@ function submit() {
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No. 118, Norodom Blvd, Phnom Penh, Cambodia</p>
           </div>
         </div>
-        <div class="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface flex gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400">
             <Phone class="h-5 w-5" />
           </span>
@@ -52,7 +52,7 @@ function submit() {
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">+855 23 000 000 · +855 12 000 000</p>
           </div>
         </div>
-        <div class="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface flex gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400">
             <Mail class="h-5 w-5" />
           </span>
@@ -61,7 +61,7 @@ function submit() {
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">contact@globalcms.com · newsroom@globalcms.com</p>
           </div>
         </div>
-        <div class="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-soft dark:border-gray-700 dark:bg-gray-800">
+        <div class="card-surface flex gap-4 p-5">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400">
             <Clock class="h-5 w-5" />
           </span>
@@ -80,7 +80,7 @@ function submit() {
         </div>
       </div>
 
-      <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-soft dark:border-gray-700 dark:bg-gray-800 lg:col-span-3">
+      <div class="card-surface p-6 lg:col-span-3">
         <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">Send a message</h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">We usually respond within one business day.</p>
         <form class="mt-6 grid gap-4 sm:grid-cols-2" @submit.prevent="submit">

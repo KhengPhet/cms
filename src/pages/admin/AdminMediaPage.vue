@@ -117,7 +117,7 @@ function commitDelete() {
       </BaseButton>
     </div>
 
-    <div class="grid gap-3 rounded-2xl border border-gray-100 bg-white p-4 sm:grid-cols-3 dark:border-gray-700 dark:bg-gray-800">
+    <div class="card-surface grid gap-3 p-4 sm:grid-cols-3">
       <div class="sm:col-span-1">
         <div class="relative">
           <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -137,7 +137,7 @@ function commitDelete() {
       <div
         v-for="m in filtered"
         :key="m.id"
-        class="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card dark:border-gray-700 dark:bg-gray-800"
+        class="group card-surface overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-card"
       >
         <div class="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700">
           <img

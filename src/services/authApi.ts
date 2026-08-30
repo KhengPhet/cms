@@ -1,21 +1,18 @@
-import { api, ApiError, getImageUrl } from '@/services/api'
+import { api, ApiError } from '@/services/api'
+import { getImageUrl } from '@/utils/getImageUrl'
 import type { BackendUser } from '@/types'
 
 export interface AuthUser {
-  id: number | string
+  id: number
   name: string
+  username: string
   email: string
   role: string
   thumbnail: string | null
   createdAt: string
-  username?: string
-  avatar?: string
-  bio?: string
-}
-
-export interface LoginPayload {
-  email: string
-  password: string
+  updatedAt: string | null
+  avatar: string
+  bio?: string | null
 }
 
 export interface LoginResponse {
@@ -25,30 +22,49 @@ export interface LoginResponse {
   user: BackendUser
 }
 
-export interface RegisterPayload {
-  name: string
-  email: string
-  password: string
-  thumbnail?: Blob | File | string | null
+export interface RegisterResponse {
+  success: boolean
+  message: string
+  token: string
+  user: BackendUser
 }
 
-export interface RegisterResponse {
+export interface RegisterPayload {
+  name: string
+  username: string
+  email: string
+  password: string
+  role?: string
+  thumbnail?: Blob | File | null
+}
+
+export interface UpdateProfileResponse {
   success: boolean
   message: string
   user: BackendUser
 }
 
+export interface UpdateProfilePayload {
+  name?: string
+  username?: string
+  email?: string
+  bio?: string | null
+  password?: string
+  thumbnail?: Blob | File | null
+}
+
 function mapUser(u: BackendUser): AuthUser {
   return {
-    id: u.id,
+    id: Number(u.id),
     name: u.name,
+    username: u.username ?? u.name.toLowerCase().replace(/\s+/g, ''),
     email: u.email,
     role: u.role,
     thumbnail: u.thumbnail ?? null,
     createdAt: u.created_at,
-    username: u.name.toLowerCase().replace(/\s+/g, ''),
+    updatedAt: u.updated_at ?? null,
     avatar: u.thumbnail ? avatarUrl(u.thumbnail) : '',
-    bio: ''
+    bio: u.bio ?? null
   }
 }
 
@@ -58,32 +74,73 @@ function avatarUrl(thumbnail: string): string {
 }
 
 export const authApi = {
-  async login(identifier: string, password: string): Promise<AuthUser> {
-    const email = identifier.trim().toLowerCase()
-    const res = await api.post<LoginResponse>('/api/auth/login', {
-      email,
-      password
-    })
-    if (res.token) localStorage.setItem('gcms_token', res.token)
-    return mapUser(res.user)
+  async login(email: string, password: string): Promise<{ token: string; user: AuthUser }> {
+    try {
+      // Field name MUST match the backend: POST /api/auth/login expects { email, password }.
+      const res = await api.post<LoginResponse>('/api/auth/login', {
+        email,
+        password
+      })
+      if (!res.success || !res.token) {
+        throw new AuthError({ status: 401, message: res.message || 'Invalid credentials' })
+      }
+      return { token: res.token, user: mapUser(res.user) }
+    } catch (err) {
+      if (err instanceof AuthError) throw err
+      throw await toAuthError(err)
+    }
   },
 
-  async register(payload: RegisterPayload): Promise<AuthUser> {
-    const form = new FormData()
-    form.append('name', payload.name)
-    form.append('email', payload.email.toLowerCase())
-    form.append('password', payload.password)
-    if (payload.thumbnail) {
-      form.append('thumbnail', payload.thumbnail)
+  async register(payload: RegisterPayload): Promise<{ token: string; user: AuthUser }> {
+    try {
+      const form = new FormData()
+      form.append('name', payload.name)
+      form.append('username', payload.username)
+      form.append('email', payload.email.toLowerCase())
+      form.append('password', payload.password)
+      form.append('role', payload.role || 'user')
+      if (payload.thumbnail instanceof File || payload.thumbnail instanceof Blob) {
+        form.append('thumbnail', payload.thumbnail)
+      }
+      // Never set Content-Type manually — the browser generates the multipart boundary.
+      const res = await api.post<RegisterResponse>('/api/auth/register', form, { auth: false })
+      if (!res.success || !res.token) {
+        throw new AuthError({ status: 400, message: res.message || 'Registration failed' })
+      }
+      return { token: res.token, user: mapUser(res.user) }
+    } catch (err) {
+      if (err instanceof AuthError) throw err
+      throw await toAuthError(err)
     }
-    const res = await api.post<RegisterResponse>('/api/auth/register', form, { auth: false })
-    return mapUser(res.user)
   },
 
   async me(token: string): Promise<BackendUser> {
-    return api.get<BackendUser>('/api/user/profile', {
+    const res = await api.get<{ success: boolean; user: BackendUser }>('/api/user/profile', {
       headers: { Authorization: `Bearer ${token}` }
     })
+    return res.user
+  },
+
+  async updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+    try {
+      const form = new FormData()
+      if (payload.name !== undefined) form.append('name', payload.name)
+      if (payload.username !== undefined) form.append('username', payload.username)
+      if (payload.email !== undefined) form.append('email', payload.email.toLowerCase())
+      if (payload.bio !== undefined && payload.bio !== null) form.append('bio', payload.bio)
+      if (payload.password) form.append('password', payload.password)
+      if (payload.thumbnail instanceof File || payload.thumbnail instanceof Blob) {
+        form.append('thumbnail', payload.thumbnail)
+      }
+      const res = await api.put<UpdateProfileResponse>('/api/auth/me', form)
+      if (!res.success || !res.user) {
+        throw new AuthError({ status: 400, message: res.message || 'Profile update failed' })
+      }
+      return mapUser(res.user)
+    } catch (err) {
+      if (err instanceof AuthError) throw err
+      throw await toAuthError(err)
+    }
   }
 }
 
@@ -103,7 +160,7 @@ export async function toAuthError(err: unknown): Promise<AuthError> {
     return new AuthError({
       status: err.status,
       message: err.message,
-      code: err.status === 401 ? 'INVALID' : undefined
+      code: err.code || (err.status === 401 ? 'INVALID' : undefined)
     })
   }
   return new AuthError({ status: 0, message: 'Network error. Please try again.' })

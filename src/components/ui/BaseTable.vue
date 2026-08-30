@@ -7,6 +7,7 @@ export interface TableColumn {
   label: string
   align?: 'left' | 'right' | 'center'
   width?: string
+  hideBelow?: 'sm' | 'md' | 'lg'
 }
 
 const props = defineProps({
@@ -23,6 +24,12 @@ const emit = defineEmits<{ 'update:selected': [value: string[]] }>()
 function cellSlot(key: string) {
   return `cell-${key}`
 }
+
+const hiddenByBreakpoint = {
+  sm: 'max-sm:hidden',
+  md: 'max-md:hidden',
+  lg: 'max-lg:hidden'
+} as const
 </script>
 
 <template>
@@ -35,7 +42,8 @@ function cellSlot(key: string) {
               <th
                 :class="[
                   'whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400',
-                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
+                  col.hideBelow ? hiddenByBreakpoint[col.hideBelow] : ''
                 ]"
                 :style="col.width ? `width: ${col.width}` : ''"
               >
@@ -69,7 +77,8 @@ function cellSlot(key: string) {
                 :key="col.key"
                 :class="[
                   'px-4 py-3.5 text-gray-700 dark:text-gray-300',
-                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
+                  col.hideBelow ? hiddenByBreakpoint[col.hideBelow] : ''
                 ]"
               >
                 <slot :name="cellSlot(col.key)" :row="row">

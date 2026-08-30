@@ -47,10 +47,7 @@ function goSearch() {
   <header class="sticky top-0 z-50">
     <div class="border-b border-gray-100 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
       <div class="flex items-center gap-4 px-4 py-3 mx-auto max-w-7xl">
-        <button
-          class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 lg:hidden dark:text-gray-300 dark:hover:bg-gray-800"
-          @click="mobileOpen = !mobileOpen"
-        >
+        <button class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 lg:hidden dark:text-gray-300 dark:hover:bg-gray-800" @click="mobileOpen = !mobileOpen">
           <Menu v-if="!mobileOpen" class="w-6 h-6" />
           <X v-else class="w-6 h-6" />
         </button>
@@ -64,38 +61,21 @@ function goSearch() {
 
         <div class="flex items-center gap-2 ml-auto">
           <div class="relative hidden md:block">
-            <input
-              placeholder="Search…"
-              class="w-48 py-2 pr-4 text-sm transition-all border border-gray-200 rounded-full bg-gray-50 pl-9 focus:w-64 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              @keydown.enter="goSearch"
-            />
+            <input placeholder="Search…" class="w-48 py-2 pr-4 text-sm transition-all border border-gray-200 rounded-full bg-gray-50 pl-9 focus:w-64 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white" @keydown.enter="goSearch" />
             <Search class="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
           </div>
 
-          <button
-            class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
-            @click="goSearch"
-          >
+          <button class="p-2 text-gray-600 transition-colors rounded-lg hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800" @click="goSearch">
             <Search class="w-5 h-5" />
           </button>
-
           <div ref="langRoot" class="relative hidden sm:block">
-            <button
-              class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-              @click="langOpen = !langOpen"
-            >
+            <button class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800" @click="langOpen = !langOpen" >
               {{ LANGUAGES.find((l) => l.code === app.language)?.code.toUpperCase() }}
               <ChevronDown :class="['h-3 w-3 transition-transform', langOpen ? 'rotate-180' : '']" />
             </button>
             <Transition name="dropdown">
-              <div
-                v-if="langOpen"
-                class="absolute right-0 z-50 mt-2 w-44 origin-top-right rounded-xl border border-gray-100 bg-white p-1.5 shadow-card dark:border-gray-700 dark:bg-gray-800"
-              >
-                <button
-                  v-for="l in LANGUAGES"
-                  :key="l.code"
-                  class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              <div v-if="langOpen" class="absolute right-0 z-50 mt-2 w-44 origin-top-right rounded-xl border border-gray-100 bg-white p-1.5 shadow-card dark:border-gray-700 dark:bg-gray-800">
+                <button v-for="l in LANGUAGES" :key="l.code" class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                   :class="app.language === l.code ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-200'"
                   @click="app.setLanguage(l.code); langOpen = false"
                 >
@@ -106,11 +86,7 @@ function goSearch() {
             </Transition>
           </div>
 
-          <router-link
-            v-if="!auth.isAuthenticated"
-            to="/login"
-            class="hidden px-4 py-2 text-sm font-bold text-white transition-colors rounded-lg bg-primary-600 hover:bg-primary-700 sm:block"
-          >
+          <router-link v-if="!auth.isAuthenticated" to="/login" class="hidden px-4 py-2 text-sm font-bold text-white transition-colors rounded-lg bg-primary-600 hover:bg-primary-700 sm:block">
             {{ t('auth.login') }}
           </router-link>
           <router-link

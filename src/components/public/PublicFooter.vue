@@ -39,18 +39,11 @@ const socials = [
             {{ t('common.footerDesc') }}
           </p>
           <div class="flex gap-2 mt-5">
-            <a
-              v-for="s in socials"
-              :key="s.name"
-              href="#"
-              class="flex items-center justify-center text-gray-600 transition-all bg-gray-200 rounded-full h-9 w-9 hover:text-white dark:bg-gray-800 dark:text-gray-300"
-              :class="s.color"
-            >
+            <a v-for="s in socials" :key="s.name" href="#" class="flex items-center justify-center text-gray-600 transition-all bg-gray-200 rounded-full h-9 w-9 hover:text-white dark:bg-gray-800 dark:text-gray-300" :class="s.color">
               <SocialIcon :name="s.name" :size="15" />
             </a>
           </div>
         </div>
-
         <div>
           <h4 class="text-sm font-bold tracking-wider text-gray-900 uppercase dark:text-white">{{ t('common.quickLinks') }}</h4>
           <ul class="mt-4 space-y-2.5">
@@ -61,30 +54,21 @@ const socials = [
             </li>
           </ul>
         </div>
-
         <div>
           <h4 class="text-sm font-bold tracking-wider text-gray-900 uppercase dark:text-white">{{ t('common.categories') }}</h4>
           <ul class="mt-4 space-y-2.5">
             <li v-for="c in store.categories.slice(0, 7)" :key="c.id">
-              <router-link
-                :to="`/category/${c.slug}`"
-                class="text-sm text-gray-500 transition-colors hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
-              >
+              <router-link :to="`/category/${c.slug}`" class="text-sm text-gray-500 transition-colors hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400">
                 {{ c.name }}
               </router-link>
             </li>
           </ul>
         </div>
-
         <div>
           <h4 class="text-sm font-bold tracking-wider text-gray-900 uppercase dark:text-white">{{ t('common.newsletterTitle') }}</h4>
           <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('common.newsletterDesc') }}</p>
           <form class="flex gap-2 mt-4" @submit.prevent>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-            />
+            <input type="email" placeholder="you@example.com" class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"/>
             <button class="px-4 py-2 text-sm font-bold text-white transition-colors rounded-lg shrink-0 bg-primary-600 hover:bg-primary-700">
               OK
             </button>

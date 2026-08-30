@@ -1,9 +1,9 @@
 export type ImageValue = string | null | undefined
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8080'
+import { getApiBaseUrl } from '@/utils/apiBaseUrl'
 
 function baseUrl(): string {
-  return String(API_BASE_URL).replace(/\/+$/, '')
+  return getApiBaseUrl()
 }
 
 function isAbsolute(image: string): boolean {

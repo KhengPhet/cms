@@ -67,7 +67,13 @@ export function mapPostToArticle(post: BackendPost, index = 0): Article {
   const content = post.body ?? ''
   const categoryId = post.category_id != null ? String(post.category_id) : 'uncategorized'
   const category = post.category ?? post.category_name ?? 'Uncategorized'
-  const commentCount = typeof post.comment_count === 'number' ? post.comment_count : 0
+  const commentCountRaw = post.comment_count as unknown
+  const commentCount =
+    typeof commentCountRaw === 'number'
+      ? commentCountRaw
+      : typeof commentCountRaw === 'string'
+        ? Number(commentCountRaw) || 0
+        : 0
 
   return {
     id: String(post.id),

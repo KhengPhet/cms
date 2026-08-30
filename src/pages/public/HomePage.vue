@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useArticlesStore } from '@/stores/articles'
 import { useI18n } from '@/composables/useI18n'
+import { AlertTriangle, Loader2 } from '@lucide/vue'
 import HeroSlider from '@/components/public/HeroSlider.vue'
 import ArticleCard from '@/components/public/ArticleCard.vue'
 import SectionHeader from '@/components/public/SectionHeader.vue'
@@ -10,6 +11,10 @@ import { Flame, TrendingUp, Newspaper } from '@lucide/vue'
 
 const store = useArticlesStore()
 const { t } = useI18n()
+
+onMounted(() => {
+  store.fetchAll()
+})
 
 const trendingTopics = computed(() => {
   const seen: string[] = []
@@ -38,6 +43,29 @@ const recommended = computed(() => {
 
 <template>
   <div>
+    <div v-if="store.loading" class="page-container pt-8">
+      <div class="card-surface flex items-center gap-3 p-5 text-gray-500 dark:text-gray-400">
+        <Loader2 class="h-5 w-5 animate-spin text-primary-600" />
+        <span>{{ t('common.loading') }}</span>
+      </div>
+    </div>
+
+    <div v-else-if="store.error" class="page-container pt-8">
+      <div class="card-surface flex items-center gap-3 border-red-200 bg-red-50 p-5 text-red-700 dark:border-red-900 dark:bg-red-900/30 dark:text-red-300">
+        <AlertTriangle class="h-5 w-5 shrink-0" />
+        <div>
+          <p class="font-bold">Failed to load articles</p>
+          <p class="text-sm">{{ store.error }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="!store.published.length" class="page-container pt-8">
+      <div class="card-surface p-5 text-center text-gray-500 dark:text-gray-400">
+        {{ t('common.noArticles') }}
+      </div>
+    </div>
+
     <section class="pt-6 page-container">
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2">

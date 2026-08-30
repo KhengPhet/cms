@@ -1,3 +1,5 @@
+import { getApiBaseUrl as resolveApiBaseUrl } from '@/utils/apiBaseUrl'
+
 const TOKEN_KEY = 'gcms_token'
 
 export interface ApiErrorOptions {
@@ -22,9 +24,7 @@ export class ApiError extends Error {
 }
 
 export function getApiBaseUrl(): string {
-  const base = import.meta.env.VITE_API_BASE_URL as string | undefined
-  const origin = (base ?? '').replace(/\/+$/, '')
-  return origin
+  return resolveApiBaseUrl()
 }
 
 interface FetchOptions {

@@ -19,16 +19,20 @@ export interface CategoryResponse {
 
 export const categoryApi = {
   async list(): Promise<BackendCategory[]> {
-    const res = await api.get<CategoryListResponse>(
+    const res = await api.get<BackendCategory[] | CategoryListResponse>(
       '/api/categories'
     )
 
-    console.log(
-      'CATEGORY API RESPONSE:',
-      res
-    )
+    // The backend returns a raw array: [ { id, name, slug, description, count, ... } ]
+    if (Array.isArray(res)) return res
 
-    return res?.categories ?? []
+    // Fallback for a wrapped shape: { success, categories: [...] }
+    if (res && Array.isArray((res as CategoryListResponse).categories)) {
+      return (res as CategoryListResponse).categories
+    }
+
+    console.warn('Unexpected categories API response:', res)
+    return []
   },
 
   async getById(

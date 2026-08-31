@@ -122,12 +122,12 @@ function isCurrent(to: string): boolean {
       <div v-if="!collapsed || app.mobileSidebarOpen" class="flex items-center gap-2">
         <img src="/p-new.png" alt="logo" class="object-cover w-8 h-8 rounded-lg" />
         <div class="leading-tight">
-          <span class="block text-sm font-extrabold text-gray-900 dark:text-white">{{ settings.appName }}</span>
+          <span class="block text-sm font-extrabold text-gray-900 dark:text-white">{{ settings.appName2 }}</span>
           <span class="block text-[9px] font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">{{ dashboardLabelForRole(auth.user?.role) }}</span>
         </div>
       </div>
       <div v-else :class="['flex', collapsed && !app.mobileSidebarOpen ? 'justify-center' : '']">
-        <img src="/p-cms.png" alt="logo" class="object-cover w-8 h-8 rounded-lg" />
+        <img src="/p-new.png" alt="logo" class="object-cover w-8 h-8 rounded-lg" />
       </div>
       <button
         class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 lg:hidden dark:hover:bg-gray-800"

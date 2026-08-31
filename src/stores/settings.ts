@@ -5,7 +5,8 @@ export const useSettingsStore = defineStore('settings', {
   state: () => ({
     loaded: false,
     map: {} as SettingsMap,
-    appName: 'P NEW'
+    appName: 'P NEW',
+    appName2:"P CMS"
   }),
   actions: {
     async fetch(force = false) {

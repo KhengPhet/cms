@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
-
+@tailwind utilities;  
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -22,7 +21,7 @@
     @apply mx-auto w-[90%] px-4 sm:px-6 lg:px-8;
   }
   .card-surface {
-    @apply rounded-2xl border border-gray-100 bg-white shadow-soft dark:border-gray-700 dark:bg-gray-800;
+    @apply bg-white border border-gray-100 rounded-2xl shadow-soft dark:border-gray-700 dark:bg-gray-800;
   }
 }
 

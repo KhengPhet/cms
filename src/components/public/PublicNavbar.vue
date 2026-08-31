@@ -50,16 +50,8 @@ function goSearch() {
           <X v-else class="w-6 h-6" />
         </button>
 
-        <a
-          href="/"
-          class="flex shrink-0 items-center gap-2.5"
-          @click.prevent="router.push('/')"
-        >
-          <img
-            src="/p-new.png"
-            alt="logo"
-            class="object-cover w-10 h-10 rounded-xl"
-          />
+        <a href="/" class="flex shrink-0 items-center gap-2.5" @click.prevent="router.push('/')" >
+          <img src="/p-new.png" alt="logo" class="object-cover w-10 h-10 rounded-xl" />
           <div class="leading-tight">
             <span
               class="block text-lg font-extrabold tracking-tight text-gray-900 dark:text-white"

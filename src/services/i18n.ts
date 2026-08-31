@@ -9,7 +9,7 @@ export const LANGUAGES: { code: LanguageCode; label: string; native: string }[] 
 type Dict = Record<string, string>
 
 const en: Dict = {
-  'app.name': 'P CMS',
+  'app.name': 'P NEW',
   'app.tagline': 'Trusted news. Everywhere.',
   'nav.home': 'Home',
   'nav.national': 'National',

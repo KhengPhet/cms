@@ -38,12 +38,26 @@ export function getImageUrl(value: ImageValue): string {
 
   if (isAbsolute(image)) return image
 
-  if (image.startsWith('/uploads/')) return `${baseUrl()}${image}`
-  if (image.startsWith('uploads/')) return `${baseUrl()}/${image}`
-  if (image.startsWith('posts/')) return `${baseUrl()}/uploads/${image}`
+  if (image.startsWith('/uploads/')) {
+    const url = `${baseUrl()}${image}`
+    console.log('IMAGE URL:', url)
+    return url
+  }
+  if (image.startsWith('uploads/')) {
+    const url = `${baseUrl()}/${image}`
+    console.log('IMAGE URL:', url)
+    return url
+  }
+  if (image.startsWith('posts/')) {
+    const url = `${baseUrl()}/uploads/${image}`
+    console.log('IMAGE URL:', url)
+    return url
+  }
 
   // Bare filename (e.g. "example.png") -> assume posts folder.
-  return `${baseUrl()}/uploads/posts/${image}`
+  const url = `${baseUrl()}/uploads/posts/${image}`
+  console.log('IMAGE URL:', url)
+  return url
 }
 
 /**

@@ -24,7 +24,6 @@ interface UserResponse {
 export const userApi = {
   async getAll(): Promise<User[]> {
     const response = await api.get<UsersResponse>('/api/user')
-
     return response.users
   },
 

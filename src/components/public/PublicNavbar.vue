@@ -56,7 +56,7 @@ function goSearch() {
           @click.prevent="router.push('/')"
         >
           <img
-            src="/p-cms.png"
+            src="/p-new.png"
             alt="logo"
             class="object-cover w-10 h-10 rounded-xl"
           />
@@ -67,7 +67,7 @@ function goSearch() {
             >
           </div>
         </a>
-        <nav class="hidden flex-1 items-center justify-center gap-1 px-4 lg:flex">
+        <nav class="items-center justify-center flex-1 hidden gap-1 px-4 lg:flex">
           <router-link
             v-for="item in navItems"
             :key="item.label"

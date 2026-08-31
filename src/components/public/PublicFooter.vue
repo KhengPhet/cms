@@ -30,7 +30,7 @@ const socials = [
       <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div class="flex items-center gap-2.5">
-            <img src="/p-cms.png" alt="logo" class="h-10 w-10 shrink-0 object-contain" />
+            <img src="/p-new.png" alt="logo" class="object-contain w-10 h-10 shrink-0" />
             <div class="leading-tight">
               <span class="block text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">{{ settings.appName }}</span>
             </div>
